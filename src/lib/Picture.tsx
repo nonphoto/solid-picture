@@ -8,10 +8,14 @@ import {
   createContext,
   Accessor,
   createEffect,
-  getOwner,
 } from "solid-js";
-import { ImgElement, ImgReturn } from "./Img";
-import { SourceReturn } from "./Source";
+import { ImgElement, ImgProps, isImgReturn } from "./Img";
+import {
+  isSourceReturn,
+  SourceElement,
+  SourceProps,
+  SourceReturn,
+} from "./Source";
 
 type PictureChild = SourceReturn | JSX.Element;
 
@@ -31,38 +35,40 @@ export default function Picture(props: PictureProps) {
   const resolvedChildren = children(() => localProps.children);
 
   const sortedChildren = createMemo(() =>
-    resolvedChildren
-      .toArray()
-      .reduce<[SourceReturn[], ImgReturn[], JSX.Element[]]>(
-        (acc, child) => {
-          if (child instanceof SourceReturn) {
-            acc[0].push(child);
-          } else if (child instanceof ImgReturn) {
-            acc[1].push(child);
-          } else {
-            acc[2].push(child);
-          }
-          return acc;
-        },
-        [[], [], []]
-      )
+    resolvedChildren.toArray().reduce<{
+      sources: SourceProps[];
+      imgs: ImgProps[];
+      other: JSX.Element[];
+    }>(
+      (acc, child) => {
+        if (isSourceReturn(child)) {
+          acc.sources.push(child.props);
+        } else if (isImgReturn(child)) {
+          acc.imgs.push(child.props);
+        } else {
+          acc.other.push(child);
+        }
+        return acc;
+      },
+      { sources: [], imgs: [], other: [] }
+    )
   );
 
   createEffect(() => {
-    console.log("sortedChildren", sortedChildren());
+    console.log(sortedChildren());
   });
 
   return (
     <picture {...otherProps}>
-      <For each={sortedChildren()[0]}>
-        {(sourceReturn) => <source {...sourceReturn.props} />}
+      <For each={sortedChildren().sources}>
+        {(sourceProps) => <SourceElement {...sourceProps} />}
       </For>
-      <For each={sortedChildren()[1]}>
-        {(imgReturn) => (
-          <ImgElement {...imgReturn.props} sources={sortedChildren()[0]} />
+      <For each={sortedChildren().imgs}>
+        {(imgProps) => (
+          <ImgElement {...imgProps} sources={sortedChildren().sources} />
         )}
       </For>
-      {...sortedChildren()[2]}
+      {...sortedChildren().other}
     </picture>
   );
 }

@@ -5,25 +5,27 @@ import {
   Show,
   splitProps,
 } from "solid-js";
-import { SourceReturn } from "./Source";
+import { SourceProps } from "./Source";
+import { imgSymbol } from "./symbols";
 import { Sizeable } from "./types";
 import { styleAspectRatio } from "./utils";
 
 export type ImgProps = ComponentProps<"img"> & Partial<Sizeable>;
 
-export class ImgReturn {
-  props: ImgProps;
+export type ImgReturn = { props: ImgProps; [imgSymbol]: any };
 
-  constructor(props: ImgProps) {
-    this.props = props;
-  }
+export function isImgReturn(object: unknown): object is ImgReturn {
+  return object != null && typeof object === "object" && imgSymbol in object;
 }
 
 export default function Img(props: ImgProps) {
-  return new ImgReturn(props) as unknown as JSX.Element;
+  return {
+    props,
+    [imgSymbol]: true,
+  } as unknown as JSX.Element;
 }
 
-export function ImgElement(props: ImgProps & { sources: SourceReturn[] }) {
+export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
   const [localProps, otherProps] = splitProps(props, [
     "naturalWidth",
     "naturalHeight",
@@ -38,21 +40,16 @@ export function ImgElement(props: ImgProps & { sources: SourceReturn[] }) {
     <>
       <style>{`:where(#${id()}) { aspect-ratio: ${styleAspectRatio(
         localProps
-      )}; background-image: url(${
-        otherProps.src
-      }); background-repeat: no-repeat; background-size: cover`}</style>
+      )}; background-image: url(${otherProps.src});`}</style>
       <Show when={localProps.sources.length > 0}>
         <style>
-          {localProps.sources.map((source) =>
-            source.props.media &&
-            source.props.naturalWidth &&
-            source.props.naturalHeight
-              ? `@media ${
-                  source.props.media
-                } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(
-                  source.props
-                )}; } }`
-              : ""
+          {localProps.sources.map(
+            (source) =>
+              `@media ${
+                source.media
+              } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(
+                source
+              )}; background-image: url(${source.src}) } }`
           )}
         </style>
       </Show>
