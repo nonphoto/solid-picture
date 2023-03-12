@@ -54,10 +54,6 @@ export default function Picture(props: PictureProps) {
     )
   );
 
-  createEffect(() => {
-    console.log(sortedChildren());
-  });
-
   return (
     <picture {...otherProps}>
       <For each={sortedChildren().sources}>
