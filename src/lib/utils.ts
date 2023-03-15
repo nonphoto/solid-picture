@@ -5,14 +5,14 @@ export function cssMedia(media: string, rules: string) {
 }
 
 export function cssRule(
-  rule: string,
+  selector: string,
   properties: [string, string | undefined][]
 ) {
   const propertiesString = properties
     .filter(([, value]) => value != null)
     .map(([name, value]) => `${name}: ${value}`)
     .join("; ");
-  return `${rule} { ${propertiesString} }`;
+  return `${selector} { ${propertiesString} }`;
 }
 
 export function maybe<T, U>(value: T, fn: (just: NonNullable<T>) => U) {

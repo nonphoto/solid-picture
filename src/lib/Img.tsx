@@ -40,7 +40,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
             ["aspect-ratio", styleAspectRatio(localProps)],
             ["background-image", maybe(localProps.placeholderSrc, styleUrl)],
           ]),
-          localProps.sources
+          ...localProps.sources
             .filter((source) => source.media != null)
             .map((source) =>
               cssMedia(
@@ -51,7 +51,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
                 ])
               )
             ),
-        ]}
+        ].join(" ")}
       </style>
       <img {...otherProps} id={id()} />
     </>
