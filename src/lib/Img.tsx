@@ -1,14 +1,15 @@
-import {
-  ComponentProps,
-  createUniqueId,
-  JSX,
-  Show,
-  splitProps,
-} from "solid-js";
+import { ComponentProps, createUniqueId, JSX, splitProps } from "solid-js";
 import { SourceProps } from "./Source";
 import { imgSymbol } from "./symbols";
 import { Sizeable } from "./types";
-import { styleAspectRatio } from "./utils";
+import {
+  cssMedia,
+  cssRule,
+  maybe,
+  styleAspectRatio,
+  stylePx,
+  styleUrl,
+} from "./utils";
 
 export type ImgProps = ComponentProps<"img"> & Partial<Sizeable>;
 
@@ -38,24 +39,29 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
 
   return (
     <>
-      <style>{`:where(#${id()}) { aspect-ratio: ${styleAspectRatio(
-        localProps
-      )}; max-width: ${localProps.naturalWidth}px; max-height: ${
-        localProps.naturalHeight
-      }px; background-image: url(${otherProps.src});`}</style>
-      <Show when={localProps.sources.length > 0}>
-        <style>
-          {localProps.sources.map(
-            (source) =>
-              `@media ${
-                source.media
-              } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(source)};
-              max-width: ${source.naturalWidth}px; max-height: ${
-                source.naturalHeight
-              }px; background-image: url(${source.src}) } }`
-          )}
-        </style>
-      </Show>
+      <style>
+        {[
+          cssRule(`:where(#${id()})`, [
+            ["aspect-ratio", styleAspectRatio(localProps)],
+            ["max-width", maybe(localProps.naturalWidth, stylePx)],
+            ["max-height", maybe(localProps.naturalHeight, stylePx)],
+            ["background-image", maybe(otherProps.src, styleUrl)],
+          ]),
+          localProps.sources
+            .filter((source) => source.media != null)
+            .map((source) =>
+              cssMedia(
+                source.media!,
+                cssRule(`:where(#${id()})`, [
+                  ["aspect-ratio", styleAspectRatio(source)],
+                  ["max-width", maybe(source.naturalWidth, stylePx)],
+                  ["max-height", maybe(source.naturalHeight, stylePx)],
+                  ["background-image", maybe(source.src, styleUrl)],
+                ])
+              )
+            ),
+        ]}
+      </style>
       <img {...otherProps} id={id()} />
     </>
   );
