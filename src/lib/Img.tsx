@@ -11,7 +11,8 @@ import {
   styleUrl,
 } from "./utils";
 
-export type ImgProps = ComponentProps<"img"> & Partial<Sizeable>;
+export type ImgProps = ComponentProps<"img"> &
+  Partial<Sizeable> & { placeholderSrc: string };
 
 export type ImgReturn = { props: ImgProps; [imgSymbol]: any };
 
@@ -30,12 +31,13 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
   const [localProps, otherProps] = splitProps(props, [
     "naturalWidth",
     "naturalHeight",
+    "placeholderSrc",
     "sources",
     "id",
   ]);
 
   const defaultId = createUniqueId();
-  const id = () => localProps.id ?? `picture-${defaultId}`;
+  const id = () => localProps.id ?? `img-${defaultId}`;
 
   return (
     <>

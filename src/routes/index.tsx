@@ -19,14 +19,14 @@ export default function Index() {
     <div>
       <Picture>
         <Source
-          src={portraitLqipSrc}
+          placeholderSrc={portraitLqipSrc}
           srcset={`${portraitSrc}&h=1000`}
           media="(orientation: portrait)"
           naturalWidth={699}
           naturalHeight={1000}
         />
         <Img
-          src={landscapeLqipSrc}
+          placeholderSrc={landscapeLqipSrc}
           srcset={`${landscapeSrc}&w=1000`}
           naturalWidth={1000}
           naturalHeight={678}

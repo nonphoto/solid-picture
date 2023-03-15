@@ -2,7 +2,8 @@ import { ComponentProps, JSX, splitProps } from "solid-js";
 import { sourceSymbol } from "./symbols";
 import { Sizeable } from "./types";
 
-export type SourceProps = ComponentProps<"source"> & Partial<Sizeable>;
+export type SourceProps = ComponentProps<"source"> &
+  Partial<Sizeable> & { placeholderSrc?: string };
 
 export type SourceReturn = {
   props: SourceProps;
@@ -21,6 +22,10 @@ export default function Source(props: SourceProps) {
 }
 
 export function SourceElement(props: SourceProps) {
-  const [, otherProps] = splitProps(props, ["naturalWidth", "naturalHeight"]);
+  const [, otherProps] = splitProps(props, [
+    "naturalWidth",
+    "naturalHeight",
+    "placeholderSrc",
+  ]);
   return <source {...otherProps} />;
 }
