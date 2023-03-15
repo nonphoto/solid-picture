@@ -3,7 +3,7 @@ import { sourceSymbol } from "./symbols";
 import { Sizeable } from "./types";
 
 export type SourceProps = ComponentProps<"source"> &
-  Partial<Sizeable> & { placeholderSrc?: string };
+  Partial<Sizeable> & { placeholderSrc?: string; placeholderPoster?: string };
 
 export type SourceReturn = {
   props: SourceProps;

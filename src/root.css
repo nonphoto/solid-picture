@@ -18,7 +18,8 @@ body {
   margin: 0;
 }
 
-img {
+img,
+video {
   object-fit: cover;
   background-size: cover;
   background-repeat: no-repeat;
