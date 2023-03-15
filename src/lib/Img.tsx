@@ -53,7 +53,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
           )}
         </style>
       </Show>
-      <img {...otherProps} id={id()} />
+      <img {...otherProps} id={id()} sizes="auto" />
     </>
   );
 }
