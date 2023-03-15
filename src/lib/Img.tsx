@@ -40,9 +40,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
     <>
       <style>{`:where(#${id()}) { aspect-ratio: ${styleAspectRatio(
         localProps
-      )}; width: ${localProps.naturalWidth}px; background-image: url(${
-        otherProps.src
-      });`}</style>
+      )}; background-image: url(${otherProps.src});`}</style>
       <Show when={localProps.sources.length > 0}>
         <style>
           {localProps.sources.map(
@@ -51,9 +49,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
                 source.media
               } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(
                 source
-              )}; width: ${source.naturalWidth}px; background-image: url(${
-                source.src
-              }) } }`
+              )}; background-image: url(${source.src}) } }`
           )}
         </style>
       </Show>
