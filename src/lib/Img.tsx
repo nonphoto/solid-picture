@@ -2,14 +2,7 @@ import { ComponentProps, createUniqueId, JSX, splitProps } from "solid-js";
 import { SourceProps } from "./Source";
 import { imgSymbol } from "./symbols";
 import { Sizeable } from "./types";
-import {
-  cssMedia,
-  cssRule,
-  maybe,
-  styleAspectRatio,
-  stylePx,
-  styleUrl,
-} from "./utils";
+import { cssMedia, cssRule, maybe, styleAspectRatio, styleUrl } from "./utils";
 
 export type ImgProps = ComponentProps<"img"> &
   Partial<Sizeable> & { placeholderSrc: string };
@@ -45,9 +38,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
         {[
           cssRule(`:where(#${id()})`, [
             ["aspect-ratio", styleAspectRatio(localProps)],
-            ["max-width", maybe(localProps.naturalWidth, stylePx)],
-            ["max-height", maybe(localProps.naturalHeight, stylePx)],
-            ["background-image", maybe(otherProps.src, styleUrl)],
+            ["background-image", maybe(localProps.placeholderSrc, styleUrl)],
           ]),
           localProps.sources
             .filter((source) => source.media != null)
@@ -56,9 +47,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
                 source.media!,
                 cssRule(`:where(#${id()})`, [
                   ["aspect-ratio", styleAspectRatio(source)],
-                  ["max-width", maybe(source.naturalWidth, stylePx)],
-                  ["max-height", maybe(source.naturalHeight, stylePx)],
-                  ["background-image", maybe(source.src, styleUrl)],
+                  ["background-image", maybe(source.placeholderSrc, styleUrl)],
                 ])
               )
             ),
