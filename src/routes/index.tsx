@@ -30,6 +30,7 @@ export default function Index() {
           srcset={`${landscapeSrc}&w=1000`}
           naturalWidth={1000}
           naturalHeight={678}
+          width="100%"
         />
       </Picture>
     </div>

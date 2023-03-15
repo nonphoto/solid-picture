@@ -40,20 +40,23 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
     <>
       <style>{`:where(#${id()}) { aspect-ratio: ${styleAspectRatio(
         localProps
-      )}; background-image: url(${otherProps.src});`}</style>
+      )}; max-width: ${localProps.naturalWidth}px; max-height: ${
+        localProps.naturalHeight
+      }px; background-image: url(${otherProps.src});`}</style>
       <Show when={localProps.sources.length > 0}>
         <style>
           {localProps.sources.map(
             (source) =>
               `@media ${
                 source.media
-              } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(
-                source
-              )}; background-image: url(${source.src}) } }`
+              } { :where(#${id()}) { aspect-ratio: ${styleAspectRatio(source)};
+              max-width: ${source.naturalWidth}px; max-height: ${
+                source.naturalHeight
+              }px; background-image: url(${source.src}) } }`
           )}
         </style>
       </Show>
-      <img {...otherProps} id={id()} sizes="auto" />
+      <img {...otherProps} id={id()} />
     </>
   );
 }
