@@ -63,6 +63,9 @@ export default function Video(props: VideoProps) {
     () => queries().find(([, match]) => match())?.[0] ?? localProps
   );
 
+  const src = createMemo(() => currentSource().src);
+  const poster = createMemo(() => currentSource().poster);
+
   return (
     <>
       <style>
@@ -87,12 +90,7 @@ export default function Video(props: VideoProps) {
             ),
         ].join(" ")}
       </style>
-      <video
-        {...otherProps}
-        src={currentSource().src}
-        poster={currentSource().poster}
-        id={id()}
-      >
+      <video {...otherProps} src={src()} poster={poster()} id={id()}>
         <For each={sortedChildren().sources}>
           {(sourceProps) => <SourceElement {...sourceProps} />}
         </For>
