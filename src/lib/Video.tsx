@@ -1,4 +1,5 @@
 import {
+  Accessor,
   children,
   ComponentProps,
   createMemo,
@@ -10,6 +11,7 @@ import {
 import { isSourceReturn, SourceElement, SourceProps } from "./Source";
 import { Sizeable } from "./types";
 import { cssMedia, cssRule, maybe, styleAspectRatio, styleUrl } from "./utils";
+import { createMediaQuery } from "@solid-primitives/media";
 
 export type VideoProps = ComponentProps<"video"> &
   Partial<Sizeable> & {
@@ -18,9 +20,11 @@ export type VideoProps = ComponentProps<"video"> &
 
 export default function Video(props: VideoProps) {
   const [localProps, otherProps] = splitProps(props, [
+    "src",
     "children",
     "naturalWidth",
     "naturalHeight",
+    "poster",
     "placeholderPoster",
     "id",
   ]);
@@ -44,6 +48,19 @@ export default function Video(props: VideoProps) {
       },
       { sources: [], other: [] }
     )
+  );
+
+  const queries = createMemo(() =>
+    sortedChildren()
+      .sources.filter((source) => source.media)
+      .map<[SourceProps, Accessor<boolean>]>((source) => [
+        source,
+        createMediaQuery(source.media!),
+      ])
+  );
+
+  const currentSource = createMemo(
+    () => queries().find(([, match]) => match())?.[0] ?? localProps
   );
 
   return (
@@ -70,7 +87,12 @@ export default function Video(props: VideoProps) {
             ),
         ].join(" ")}
       </style>
-      <video {...otherProps} id={id()}>
+      <video
+        {...otherProps}
+        src={currentSource().src}
+        poster={currentSource().poster}
+        id={id()}
+      >
         <For each={sortedChildren().sources}>
           {(sourceProps) => <SourceElement {...sourceProps} />}
         </For>
