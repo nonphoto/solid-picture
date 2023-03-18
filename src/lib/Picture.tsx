@@ -7,7 +7,6 @@ import {
   For,
   createContext,
   Accessor,
-  createEffect,
 } from "solid-js";
 import { ImgElement, ImgProps, isImgReturn } from "./Img";
 import {

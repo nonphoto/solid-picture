@@ -1,11 +1,27 @@
-import { ComponentProps, createUniqueId, JSX, splitProps } from "solid-js";
+import { createMediaQuery } from "@solid-primitives/media";
+import {
+  Accessor,
+  ComponentProps,
+  createMemo,
+  createUniqueId,
+  JSX,
+  Show,
+  splitProps,
+} from "solid-js";
 import { SourceProps } from "./Source";
 import { imgSymbol } from "./symbols";
 import { Sizeable } from "./types";
-import { cssMedia, cssRule, maybe, styleAspectRatio, styleUrl } from "./utils";
+import {
+  cssMedia,
+  cssRule,
+  isVideo,
+  maybe,
+  styleAspectRatio,
+  styleUrl,
+} from "./utils";
 
 export type ImgProps = ComponentProps<"img"> &
-  Partial<Sizeable> & { placeholderSrc: string };
+  Partial<Sizeable> & { placeholderSrc?: string };
 
 export type ImgReturn = { props: ImgProps; [imgSymbol]: any };
 
@@ -20,17 +36,52 @@ export default function Img(props: ImgProps) {
   } as unknown as JSX.Element;
 }
 
+export function VideoElement(
+  props: ComponentProps<"video"> & { srcset?: string }
+) {
+  const [localProps, otherProps] = splitProps(props, ["src", "srcset"]);
+  return (
+    <video
+      {...otherProps}
+      src={localProps.src ?? localProps.srcset}
+      autoplay
+      playsinline
+      muted
+      loop
+    />
+  );
+}
+
 export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
-  const [localProps, otherProps] = splitProps(props, [
-    "naturalWidth",
-    "naturalHeight",
-    "placeholderSrc",
-    "sources",
-    "id",
-  ]);
+  const [localProps, otherProps] = splitProps(
+    props,
+    [
+      "naturalWidth",
+      "naturalHeight",
+      "placeholderSrc",
+      "sources",
+      "src",
+      "srcset",
+      "id",
+    ],
+    ["width", "height", "style", "class", "classList"]
+  );
 
   const defaultId = createUniqueId();
   const id = () => localProps.id ?? `img-${defaultId}`;
+
+  const queries = createMemo(() =>
+    localProps.sources.map<[SourceProps, Accessor<boolean>]>((source) => [
+      source,
+      source.media ? createMediaQuery(source.media!) : () => true,
+    ])
+  );
+
+  const currentSource = createMemo(
+    () => queries().find(([, match]) => match())?.[0]
+  );
+
+  const isVideoSource = () => currentSource() && isVideo(currentSource()?.type);
 
   return (
     <>
@@ -53,7 +104,24 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
             ),
         ].join(" ")}
       </style>
-      <img {...otherProps} id={id()} />
+      <Show
+        when={isVideoSource()}
+        fallback={
+          <img
+            {...otherProps}
+            src={localProps.src}
+            srcset={localProps.srcset}
+            id={id()}
+          />
+        }
+      >
+        <VideoElement
+          {...otherProps}
+          src={currentSource()?.src}
+          srcset={currentSource()?.srcset}
+          id={id()}
+        />
+      </Show>
     </>
   );
 }
