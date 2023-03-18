@@ -1,6 +1,4 @@
-import Img from "~/lib/Img";
-import Picture from "~/lib/Picture";
-import Source from "~/lib/Source";
+import { Img, Source, Picture } from "~/lib";
 
 import data from "~/assets/data.json";
 
@@ -20,12 +18,19 @@ export default function Index() {
         />
         <Img
           placeholderSrc={data.flowerLandscape}
-          srcset={`${baseUrl}/flower-landscape.mp4`}
+          srcset={`${baseUrl}/flower-landscape.jpeg`}
           naturalWidth={854}
           naturalHeight={480}
           width="100%"
         />
       </Picture>
+      <Img
+        placeholderSrc={data.flowerLandscape}
+        srcset={`${baseUrl}/flower-landscape.jpeg`}
+        naturalWidth={854}
+        naturalHeight={480}
+        width="100%"
+      />
     </div>
   );
 }

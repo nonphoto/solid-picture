@@ -4,12 +4,10 @@ import {
   ComponentProps,
   createMemo,
   createUniqueId,
-  JSX,
   Show,
   splitProps,
 } from "solid-js";
 import { SourceProps } from "./Source";
-import { imgSymbol } from "./symbols";
 import { Sizeable } from "./types";
 import {
   cssMedia,
@@ -19,21 +17,26 @@ import {
   styleAspectRatio,
   styleUrl,
 } from "./utils";
+import {
+  createToken,
+  createTokenizer,
+  isToken,
+  TokenElement,
+} from "@solid-primitives/jsx-tokenizer";
 
 export type ImgProps = ComponentProps<"img"> &
-  Partial<Sizeable> & { placeholderSrc?: string };
+  Partial<Sizeable> & { placeholderSrc?: string; sources?: SourceProps[] };
 
-export type ImgReturn = { props: ImgProps; [imgSymbol]: any };
-
-export function isImgReturn(object: unknown): object is ImgReturn {
-  return object != null && typeof object === "object" && imgSymbol in object;
+export interface ImgToken {
+  props: ImgProps;
 }
 
-export default function Img(props: ImgProps) {
-  return {
-    props,
-    [imgSymbol]: true,
-  } as unknown as JSX.Element;
+export const imgTokenizer = createTokenizer<ImgToken>({
+  name: "Img Tokenizer",
+});
+
+export function isImgToken(value: any): value is TokenElement<ImgToken> {
+  return isToken(imgTokenizer, value);
 }
 
 export function VideoElement(
@@ -52,7 +55,7 @@ export function VideoElement(
   );
 }
 
-export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
+export function ImgElement(props: ImgProps) {
   const [localProps, otherProps] = splitProps(
     props,
     [
@@ -70,8 +73,10 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
   const defaultId = createUniqueId();
   const id = () => localProps.id ?? `img-${defaultId}`;
 
+  const sources = () => localProps.sources ?? [];
+
   const queries = createMemo(() =>
-    localProps.sources.map<[SourceProps, Accessor<boolean>]>((source) => [
+    sources().map<[SourceProps, Accessor<boolean>]>((source) => [
       source,
       source.media ? createMediaQuery(source.media!) : () => true,
     ])
@@ -91,7 +96,7 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
             ["aspect-ratio", styleAspectRatio(localProps)],
             ["background-image", maybe(localProps.placeholderSrc, styleUrl)],
           ]),
-          ...localProps.sources
+          ...sources()
             .filter((source) => source.media != null)
             .map((source) =>
               cssMedia(
@@ -125,3 +130,11 @@ export function ImgElement(props: ImgProps & { sources: SourceProps[] }) {
     </>
   );
 }
+
+export const Img = createToken(
+  imgTokenizer,
+  (props) => {
+    return { props };
+  },
+  ImgElement
+);

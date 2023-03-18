@@ -1,69 +1,41 @@
-import {
-  children,
-  ComponentProps,
-  splitProps,
-  JSX,
-  createMemo,
-  For,
-  createContext,
-  Accessor,
-} from "solid-js";
-import { ImgElement, ImgProps, isImgReturn } from "./Img";
-import {
-  isSourceReturn,
-  SourceElement,
-  SourceProps,
-  SourceReturn,
-} from "./Source";
+import { isToken, resolveTokens } from "@solid-primitives/jsx-tokenizer";
+import { ComponentProps, splitProps, createMemo, For } from "solid-js";
+import { ImgElement, imgTokenizer } from "./Img";
+import { isSourceToken, sourceTokenizer } from "./Source";
 
-type PictureChild = SourceReturn | JSX.Element;
-
-export type PictureProps = ComponentProps<"picture"> & {
-  children: PictureChild | PictureChild[];
-};
-
-export type PictureContextData = { sources: Accessor<SourceReturn[]> };
-
-export const PictureContext = createContext<PictureContextData>({
-  sources: () => [],
-});
-
-export default function Picture(props: PictureProps) {
+export function Picture(props: ComponentProps<"picture">) {
   const [localProps, otherProps] = splitProps(props, ["children"]);
 
-  const resolvedChildren = children(() => localProps.children);
+  const tokens = resolveTokens(
+    [sourceTokenizer, imgTokenizer],
+    () => localProps.children,
+    {
+      includeJSXElements: true,
+    }
+  );
 
-  const sortedChildren = createMemo(() =>
-    resolvedChildren.toArray().reduce<{
-      sources: SourceProps[];
-      imgs: ImgProps[];
-      other: JSX.Element[];
-    }>(
-      (acc, child) => {
-        if (isSourceReturn(child)) {
-          acc.sources.push(child.props);
-        } else if (isImgReturn(child)) {
-          acc.imgs.push(child.props);
-        } else {
-          acc.other.push(child);
-        }
-        return acc;
-      },
-      { sources: [], imgs: [], other: [] }
-    )
+  const sourceTokens = createMemo(() =>
+    tokens()
+      .filter(isSourceToken)
+      .map((token) => token.data)
   );
 
   return (
     <picture {...otherProps}>
-      <For each={sortedChildren().sources}>
-        {(sourceProps) => <SourceElement {...sourceProps} />}
+      <For each={tokens()}>
+        {(token) =>
+          isToken(imgTokenizer, token) ? (
+            <ImgElement
+              {...token.data.props}
+              sources={sourceTokens().map((data) => data.props)}
+            />
+          ) : isToken(sourceTokenizer, token) ? (
+            token()
+          ) : (
+            false
+          )
+        }
       </For>
-      <For each={sortedChildren().imgs}>
-        {(imgProps) => (
-          <ImgElement {...imgProps} sources={sortedChildren().sources} />
-        )}
-      </For>
-      {...sortedChildren().other}
     </picture>
   );
 }
