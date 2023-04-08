@@ -1,29 +1,82 @@
 {
+  "version": "0.0.0",
   "name": "solid-picture",
-  "scripts": {
-    "dev": "solid-start dev",
-    "build": "solid-start build",
-    "start": "solid-start start"
+  "description": "SolidJS component for responsive images, art direction, and inline video",
+  "license": "MIT",
+  "author": "nonphoto",
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nonphoto/solid-picture.git"
   },
+  "homepage": "https://github.com/nonphoto/solid-picture#readme",
+  "bugs": {
+    "url": "https://github.com/nonphoto/solid-picture/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "private": false,
+  "sideEffects": false,
   "type": "module",
-  "devDependencies": {
-    "@solidjs/meta": "^0.28.2",
-    "@solidjs/router": "^0.7.0",
-    "@types/node": "^18.11.18",
-    "esbuild": "^0.14.54",
-    "postcss": "^8.4.21",
-    "solid-start": "^0.2.23",
-    "solid-start-node": "^0.2.19",
-    "typescript": "^4.9.4",
-    "undici": "^5.15.1",
-    "vite": "^4.1.4"
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "browser": {},
+  "exports": {
+    "solid": {
+      "development": "./dist/dev.jsx",
+      "import": "./dist/index.jsx"
+    },
+    "development": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/dev.js"
+      },
+      "require": "./dist/dev.cjs"
+    },
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": "./dist/index.cjs"
+  },
+  "typesVersions": {},
+  "scripts": {
+    "dev": "vite serve dev",
+    "build": "tsup",
+    "test": "concurrently pnpm:test:*",
+    "test:client": "vitest",
+    "test:ssr": "pnpm run test:client --mode ssr",
+    "prepublishOnly": "pnpm build",
+    "format": "prettier --ignore-path .gitignore -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
+    "update-deps": "pnpm up -Li",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.6.0"
   },
   "dependencies": {
-    "@solid-primitives/jsx-tokenizer": "1.0.0",
-    "@solid-primitives/media": "2.1.4",
-    "solid-js": "^1.6.11"
+    "@solid-primitives/jsx-tokenizer": "1.0.3",
+    "@solid-primitives/media": "2.1.6",
+    "solid-js": "^1.7.3"
   },
-  "engines": {
-    "node": ">=16.8"
-  }
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "esbuild": "^0.17.15",
+    "esbuild-plugin-solid": "^0.5.0",
+    "jsdom": "^21.1.1",
+    "prettier": "2.8.7",
+    "solid-js": "^1.6.9",
+    "tsup": "^6.7.0",
+    "tsup-preset-solid": "^0.1.8",
+    "typescript": "^5.0.4",
+    "vite": "^4.2.1",
+    "vite-plugin-solid": "^2.7.0",
+    "vitest": "^0.29.8"
+  },
+  "keywords": [
+    "solid"
+  ],
+  "packageManager": "pnpm@7.22.0"
 }

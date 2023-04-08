@@ -1,10 +1,10 @@
-import { Img, Source, Picture } from "~/lib";
+import { Img, Source, Picture } from '../src'
 
-import data from "~/assets/data.json";
+import data from './data.json'
 
-const baseUrl = `https://pub-a7ccd757582f4bd99e5c2364327c0f84.r2.dev`;
+const baseUrl = `https://pub-a7ccd757582f4bd99e5c2364327c0f84.r2.dev`
 
-export default function Index() {
+export default function App() {
   return (
     <div>
       <Picture>
@@ -32,5 +32,5 @@ export default function Index() {
         width="100%"
       />
     </div>
-  );
+  )
 }
