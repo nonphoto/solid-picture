@@ -64,7 +64,7 @@
   "devDependencies": {
     "@changesets/cli": "2.26.1",
     "concurrently": "^8.0.1",
-    "esbuild": "^0.17.15",
+    "esbuild": "^0.17.16",
     "esbuild-plugin-solid": "^0.5.0",
     "jsdom": "^21.1.1",
     "prettier": "2.8.7",
@@ -74,7 +74,7 @@
     "typescript": "^5.0.4",
     "vite": "^4.2.1",
     "vite-plugin-solid": "^2.7.0",
-    "vitest": "^0.29.8"
+    "vitest": "^0.30.0"
   },
   "keywords": [
     "solid"
