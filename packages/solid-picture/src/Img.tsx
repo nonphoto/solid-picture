@@ -5,19 +5,19 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
-  onMount,
   Show,
   splitProps,
 } from 'solid-js'
 import { SourceProps } from './Source'
 import { Sizeable } from './types'
-import { cssMedia, cssRule, isVideo, maybe, styleAspectRatio, styleUrl } from './utils'
+import { cssMedia, cssRule, isVideo, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
 import {
   createToken,
   createTokenizer,
   isToken,
   TokenElement,
 } from '@solid-primitives/jsx-tokenizer'
+import { createElementSize } from '@solid-primitives/resize-observer'
 
 export type ImgProps = ComponentProps<'img'> &
   Partial<Sizeable> & { placeholderSrc?: string; sources?: SourceProps[] }
@@ -55,6 +55,10 @@ export function ImgElement(props: ImgProps) {
     ['width', 'height', 'style', 'class', 'classList'],
   )
 
+  const [element, setElement] = createSignal<HTMLImageElement>()
+
+  const size = createElementSize(element)
+
   const defaultId = createUniqueId()
   const id = () => localProps.id ?? `img-${defaultId}`
 
@@ -73,11 +77,7 @@ export function ImgElement(props: ImgProps) {
 
   const isAutoSizes = () => localProps.sizes === 'auto'
 
-  const [isReady, setIsReady] = createSignal(isAutoSizes())
-
-  onMount(() => {
-    setIsReady(true)
-  })
+  const isReady = () => (isAutoSizes() ? size.width != null : true)
 
   return (
     <>
@@ -105,9 +105,14 @@ export function ImgElement(props: ImgProps) {
         fallback={
           <img
             {...otherProps}
+            ref={setElement}
             src={isReady() ? localProps.src : undefined}
             srcset={isReady() ? localProps.srcset : undefined}
-            sizes={isAutoSizes() ? undefined : localProps.sizes}
+            sizes={
+              isAutoSizes()
+                ? maybe(size.width, width => stylePx(Math.round(width)))
+                : localProps.sizes
+            }
             id={id()}
           />
         }
