@@ -1,5 +1,14 @@
 import { createMediaQuery } from '@solid-primitives/media'
-import { Accessor, ComponentProps, createMemo, createUniqueId, Show, splitProps } from 'solid-js'
+import {
+  Accessor,
+  ComponentProps,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onMount,
+  Show,
+  splitProps,
+} from 'solid-js'
 import { SourceProps } from './Source'
 import { Sizeable } from './types'
 import { cssMedia, cssRule, isVideo, maybe, styleAspectRatio, styleUrl } from './utils'
@@ -64,6 +73,12 @@ export function ImgElement(props: ImgProps) {
 
   const isAutoSizes = () => localProps.sizes === 'auto'
 
+  const [isReady, setIsReady] = createSignal(isAutoSizes())
+
+  onMount(() => {
+    setIsReady(true)
+  })
+
   return (
     <>
       <style>
@@ -90,8 +105,8 @@ export function ImgElement(props: ImgProps) {
         fallback={
           <img
             {...otherProps}
-            src={localProps.src}
-            srcset={localProps.srcset}
+            src={isReady() ? localProps.src : undefined}
+            srcset={isReady() ? localProps.srcset : undefined}
             sizes={isAutoSizes() ? undefined : localProps.sizes}
             id={id()}
           />
