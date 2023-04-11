@@ -1,6 +1,6 @@
-import { Img, Source, Picture } from '../src'
+import { Img, Source, Picture } from 'solid-picture'
 
-import data from './data.json'
+import data from '../data.json'
 
 const baseUrl = `https://pub-a7ccd757582f4bd99e5c2364327c0f84.r2.dev`
 
