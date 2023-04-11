@@ -60,7 +60,7 @@ export function ImgElement(props: ImgProps) {
 
   const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
 
-  const isVideoSource = () => currentSource() && isVideo(currentSource()?.type)
+  const isVideoSource = () => (currentSource() ? isVideo(currentSource()?.type) : false)
 
   const isAutoSizes = () => localProps.sizes === 'auto'
 

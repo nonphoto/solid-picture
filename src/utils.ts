@@ -1,7 +1,7 @@
 import { Sizeable } from './types'
 
 export function isVideo(type?: string) {
-  return type?.match(/^video\/\w+$/)
+  return type ? /^video\/\w+$/.test(type) : false
 }
 
 export function cssMedia(media: string, rules: string) {
