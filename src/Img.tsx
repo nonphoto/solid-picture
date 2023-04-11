@@ -108,6 +108,7 @@ export function ImgElement(props: ImgProps) {
   )
 }
 
+// @ts-expect-error
 export const Img = createToken(
   imgTokenizer,
   props => {

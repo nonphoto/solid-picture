@@ -28,6 +28,7 @@ export function SourceElement(props: SourceProps) {
   return <source {...props} />
 }
 
+// @ts-expect-error
 export const Source = createToken(
   sourceTokenizer,
   props => {
