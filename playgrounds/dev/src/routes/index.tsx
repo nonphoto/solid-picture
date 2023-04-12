@@ -23,21 +23,18 @@ export default function App() {
           naturalWidth={1280}
           naturalHeight={720}
         />
+        <Img placeholderSrc={data.landscape} naturalWidth={1280} naturalHeight={720} width="100%" />
+      </Picture>
+      <Picture>
         <Img
           placeholderSrc={data.landscape}
-          srcset={`${baseUrl}/landscape.jpg`}
-          naturalWidth={1280}
-          naturalHeight={720}
-          width="100%"
+          srcset={`${baseUrl}/landscape-1280.png 1280w, ${baseUrl}/landscape-1920.png 1920w`}
+          sizes="auto"
+          naturalWidth={854}
+          naturalHeight={480}
+          width="50%"
         />
       </Picture>
-      <Img
-        placeholderSrc={data.landscape}
-        srcset={`${baseUrl}/landscape.jpg`}
-        naturalWidth={854}
-        naturalHeight={480}
-        width="100%"
-      />
     </>
   )
 }
