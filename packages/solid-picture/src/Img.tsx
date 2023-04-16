@@ -1,160 +1,154 @@
-import { createMediaQuery } from '@solid-primitives/media'
 import {
   Accessor,
+  Component,
   Component,
   ComponentProps,
   createEffect,
   createMemo,
+  createEffect,
+  createResource,
   createSignal,
   createUniqueId,
   mapArray,
+  mergeProps,
+  onMount,
   Show,
   splitProps,
 } from 'solid-js'
 import { SourceProps } from './Source'
 import { Sizeable } from './types'
-import { cssMedia, cssRule, isVideo, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
-import {
-  createToken,
-  createTokenizer,
-  isToken,
-  TokenElement,
-} from '@solid-primitives/jsx-tokenizer'
+import { cssMedia, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { Dynamic } from 'solid-js/web'
+import { usePicture } from './Picture'
+import { Dynamic } from 'solid-js/web'
+
+export type ImgMode = 'controlled' | 'suspended' | 'progressive'
 
 export type ImgProps = ComponentProps<'img'> &
   Partial<Sizeable> & {
     placeholderSrc?: string
-    sources?: SourceProps[]
-    videoComponent?: Component<ComponentProps<'video'>>
+    mode?: ImgMode
   }
 
-export interface ImgToken {
-  props: ImgProps
+class ImageError extends Error {
+  target: HTMLImageElement
+
+  constructor(message: string, target: HTMLImageElement) {
+    super(message)
+    this.target = target
+  }
 }
 
-export const imgTokenizer = createTokenizer<ImgToken>({
-  name: 'Img Tokenizer',
-})
-
-export function isImgToken(value: any): value is TokenElement<ImgToken> {
-  return isToken(imgTokenizer, value)
+function loadImage(props: ComponentProps<'img'>) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    return (
+      <img
+        {...props}
+        onLoad={event => {
+          resolve(event.currentTarget)
+        }}
+        onError={event => {
+          reject(
+            new ImageError(
+              `Unable to load image for src ${event.currentTarget.currentSrc}`,
+              event.currentTarget,
+            ),
+          )
+        }}
+      />
+    ) as HTMLImageElement
+  })
 }
 
-export function VideoElement(
-  props: ComponentProps<'video'> & {
-    srcset?: string
-    component?: Component<ComponentProps<'video'>>
-  },
-) {
-  const [localProps, otherProps] = splitProps(props, ['src', 'srcset', 'component'])
-  return (
-    <Dynamic
-      {...otherProps}
-      component={localProps.component ?? 'video'}
-      src={localProps.src ?? localProps.srcset}
-      autoplay
-      playsinline
-      muted
-      loop
-    />
-  )
+export function createImage(props: ComponentProps<'img'>) {
+  const [isMounted, setIsMounted] = createSignal(false)
+
+  onMount(() => {
+    setIsMounted(true)
+  })
+
+  return createResource(isMounted, () => loadImage(props))
 }
 
-export function ImgElement(props: ImgProps) {
-  const [localProps, otherProps] = splitProps(
-    props,
-    [
-      'naturalWidth',
-      'naturalHeight',
-      'placeholderSrc',
-      'sizes',
-      'sources',
-      'src',
-      'srcset',
-      'id',
-      'videoComponent',
-    ],
-    ['width', 'height', 'style', 'class', 'classList'],
-  )
+function imageCss(selector: string, props: ImgProps, sources: SourceProps[]) {
+  return [
+    // TODO: Build css from style object instead of props
+    cssRule(selector, [
+      ['aspect-ratio', styleAspectRatio(props)],
+      ['background-image', maybe(props.placeholderSrc, styleUrl)],
+    ]),
+    ...sources
+      .filter(source => source.media != null)
+      .map(source =>
+        cssMedia(
+          source.media!,
+          cssRule(selector, [
+            ['aspect-ratio', styleAspectRatio(source)],
+            ['background-image', maybe(source.placeholderSrc, styleUrl)],
+          ]),
+        ),
+      ),
+  ].join(' ')
+}
 
-  const [element, setElement] = createSignal<HTMLImageElement>()
+export function ImgStyle(props: ImgProps) {
+  const { sources } = usePicture()
+
+  return <style>{imageCss(`:where(#${props.id})`, props, sources())}</style>
+}
+
+export function ProgressiveImg(props: ComponentProps<'img'>) {
+  return <img {...props} />
+}
+
+export function SuspendedImg(props: ComponentProps<'img'>) {
+  const [image] = createImage(props)
+
+  // TODO: image is the wrong size because it loaded without sizes attribute; handle placeholder with size
+
+  return <>{image()}</>
+}
+
+// const queries = createMemo(() =>
+//   sources().map<[SourceProps, Accessor<boolean>]>(source => [
+//     source,
+//     source.media ? createMediaQuery(source.media!) : () => true,
+//   ]),
+// )
+
+// const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
+
+const components = {
+  suspended: SuspendedImg,
+  progressive: ProgressiveImg,
+} as Record<ImgMode, Component<ImgProps>>
+
+export function Img(props: ImgProps) {
+  const [localProps, otherProps] = splitProps(props, ['mode'])
+
+  const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
 
   const size = createElementSize(element)
 
   const defaultId = createUniqueId()
-  const id = () => localProps.id ?? `img-${defaultId}`
 
-  const sources = () => localProps.sources ?? []
-
-  const queries = mapArray<SourceProps, [SourceProps, Accessor<boolean>]>(sources, source => [
-    source,
-    source.media ? createMediaQuery(source.media!) : () => true,
-  ])
-
-  const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
-
-  const isVideoSource = () => (currentSource() ? isVideo(currentSource()?.type) : false)
-
-  const isAutoSizes = () => localProps.sizes === 'auto'
-
-  const isReady = () => (isAutoSizes() ? size.width != null : true)
+  const imgProps = mergeProps(otherProps, {
+    get id() {
+      return otherProps.id ?? `img-${defaultId}`
+    },
+    get sizes() {
+      return maybe(size.width, width => stylePx(Math.round(width))) ?? otherProps.sizes
+    },
+    get ref() {
+      return setElement
+    },
+  })
 
   return (
     <>
-      <style>
-        {[
-          cssRule(`:where(#${id()})`, [
-            ['aspect-ratio', styleAspectRatio(localProps)],
-            ['background-image', maybe(localProps.placeholderSrc, styleUrl)],
-          ]),
-          ...sources()
-            .filter(source => source.media != null)
-            .map(source =>
-              cssMedia(
-                source.media!,
-                cssRule(`:where(#${id()})`, [
-                  ['aspect-ratio', styleAspectRatio(source)],
-                  ['background-image', maybe(source.placeholderSrc, styleUrl)],
-                ]),
-              ),
-            ),
-        ].join(' ')}
-      </style>
-      <Show
-        when={isVideoSource()}
-        fallback={
-          <img
-            {...otherProps}
-            ref={setElement}
-            src={isReady() ? localProps.src : undefined}
-            srcset={isReady() ? localProps.srcset : undefined}
-            sizes={
-              isAutoSizes()
-                ? maybe(size.width, width => stylePx(Math.round(width)))
-                : localProps.sizes
-            }
-            id={id()}
-          />
-        }
-      >
-        <VideoElement
-          {...otherProps}
-          component={localProps.videoComponent}
-          src={currentSource()?.src}
-          srcset={currentSource()?.srcset}
-          id={id()}
-        />
-      </Show>
+      <ImgStyle {...imgProps} />
+      <Dynamic component={components[localProps.mode ?? 'progressive']} {...imgProps} />
     </>
   )
 }
-
-export const Img = createToken(
-  imgTokenizer,
-  (props: ImgProps) => {
-    return { props }
-  },
-  ImgElement,
-)
