@@ -1,15 +1,13 @@
 import {
-  Accessor,
-  Component,
-  Component,
   ComponentProps,
+  Suspense,
+  createEffect,
   createResource,
   createSignal,
   createUniqueId,
   mapArray,
   mergeProps,
   onMount,
-  splitProps,
 } from 'solid-js'
 import { SourceProps } from './Source'
 import { Sizeable } from './types'
@@ -17,7 +15,6 @@ import { cssMedia, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from '.
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { Dynamic } from 'solid-js/web'
 import { usePicture } from './Picture'
-import { Dynamic } from 'solid-js/web'
 
 export type ImgMode = 'controlled' | 'suspended' | 'progressive'
 
@@ -58,13 +55,7 @@ function loadImage(props: ComponentProps<'img'>) {
 }
 
 export function createImage(props: ComponentProps<'img'>) {
-  const [isMounted, setIsMounted] = createSignal(false)
-
-  onMount(() => {
-    setIsMounted(true)
-  })
-
-  return createResource(isMounted, () => loadImage(props))
+  return createResource(() => loadImage(props), { ssrLoadFrom: 'initial' })
 }
 
 function imageCss(selector: string, props: ImgProps, sources: SourceProps[]) {
@@ -115,36 +106,50 @@ export function SuspendedImg(props: ComponentProps<'img'>) {
 
 // const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
 
-const components = {
-  suspended: SuspendedImg,
-  progressive: ProgressiveImg,
-} as Record<ImgMode, Component<ImgProps>>
-
 export function Img(props: ImgProps) {
-  const [localProps, otherProps] = splitProps(props, ['mode'])
-
   const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
 
   const size = createElementSize(element)
 
   const defaultId = createUniqueId()
 
-  const imgProps = mergeProps(otherProps, {
+  const imgProps = mergeProps(props, {
     get id() {
-      return otherProps.id ?? `img-${defaultId}`
+      return props.id ?? `img-${defaultId}`
     },
     get sizes() {
-      return maybe(size.width, width => stylePx(Math.round(width))) ?? otherProps.sizes
+      return maybe(size.width, width => stylePx(Math.round(width))) ?? props.sizes
     },
     get ref() {
       return setElement
     },
   })
 
+  const [data, setData] = createSignal<string | undefined>()
+
+  onMount(() => {
+    const [test] = createResource<string>(() => {
+      console.log('fetcher')
+      return new Promise(resolve => {
+        setTimeout(() => resolve('data'), 5000)
+      })
+    })
+    createEffect(() => {
+      setData(test())
+    })
+  })
+
+  createEffect(() => {
+    console.log('result: ', data())
+  })
+
   return (
     <>
-      <ImgStyle {...imgProps} />
-      <Dynamic component={components[localProps.mode ?? 'progressive']} {...imgProps} />
+      <Suspense fallback="fallback">{data()}</Suspense>
+      {/* <ImgStyle {...imgProps} />
+      <Suspense fallback={<img id={imgProps.id} ref={imgProps.ref} width={imgProps.width} />}>
+        <SuspendedImg {...imgProps} />
+      </Suspense> */}
     </>
   )
 }
