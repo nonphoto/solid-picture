@@ -1,6 +1,7 @@
 import { createMediaQuery } from '@solid-primitives/media'
 import {
   Accessor,
+  Component,
   ComponentProps,
   createMemo,
   createSignal,
@@ -18,9 +19,14 @@ import {
   TokenElement,
 } from '@solid-primitives/jsx-tokenizer'
 import { createElementSize } from '@solid-primitives/resize-observer'
+import { Dynamic } from 'solid-js/web'
 
 export type ImgProps = ComponentProps<'img'> &
-  Partial<Sizeable> & { placeholderSrc?: string; sources?: SourceProps[] }
+  Partial<Sizeable> & {
+    placeholderSrc?: string
+    sources?: SourceProps[]
+    videoComponent?: Component<ComponentProps<'video'>>
+  }
 
 export interface ImgToken {
   props: ImgProps
@@ -34,11 +40,17 @@ export function isImgToken(value: any): value is TokenElement<ImgToken> {
   return isToken(imgTokenizer, value)
 }
 
-export function VideoElement(props: ComponentProps<'video'> & { srcset?: string }) {
-  const [localProps, otherProps] = splitProps(props, ['src', 'srcset'])
+export function VideoElement(
+  props: ComponentProps<'video'> & {
+    srcset?: string
+    component?: Component<ComponentProps<'video'>>
+  },
+) {
+  const [localProps, otherProps] = splitProps(props, ['src', 'srcset', 'component'])
   return (
-    <video
+    <Dynamic
       {...otherProps}
+      component={localProps.component ?? 'video'}
       src={localProps.src ?? localProps.srcset}
       autoplay
       playsinline
@@ -51,7 +63,17 @@ export function VideoElement(props: ComponentProps<'video'> & { srcset?: string 
 export function ImgElement(props: ImgProps) {
   const [localProps, otherProps] = splitProps(
     props,
-    ['naturalWidth', 'naturalHeight', 'placeholderSrc', 'sizes', 'sources', 'src', 'srcset', 'id'],
+    [
+      'naturalWidth',
+      'naturalHeight',
+      'placeholderSrc',
+      'sizes',
+      'sources',
+      'src',
+      'srcset',
+      'id',
+      'videoComponent',
+    ],
     ['width', 'height', 'style', 'class', 'classList'],
   )
 
@@ -119,6 +141,7 @@ export function ImgElement(props: ImgProps) {
       >
         <VideoElement
           {...otherProps}
+          component={localProps.videoComponent}
           src={currentSource()?.src}
           srcset={currentSource()?.srcset}
           id={id()}

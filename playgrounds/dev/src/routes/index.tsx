@@ -23,7 +23,16 @@ export default function App() {
           naturalWidth={1280}
           naturalHeight={720}
         />
-        <Img placeholderSrc={data.landscape} naturalWidth={1280} naturalHeight={720} width="100%" />
+        <Img
+          placeholderSrc={data.landscape}
+          naturalWidth={1280}
+          naturalHeight={720}
+          width="100%"
+          videoComponent={props => {
+            console.log(JSON.stringify(props))
+            return <video {...props} />
+          }}
+        />
       </Picture>
       <Picture>
         <Img
