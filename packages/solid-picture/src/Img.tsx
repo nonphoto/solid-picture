@@ -3,9 +3,11 @@ import {
   Accessor,
   Component,
   ComponentProps,
+  createEffect,
   createMemo,
   createSignal,
   createUniqueId,
+  mapArray,
   Show,
   splitProps,
 } from 'solid-js'
@@ -86,12 +88,10 @@ export function ImgElement(props: ImgProps) {
 
   const sources = () => localProps.sources ?? []
 
-  const queries = createMemo(() =>
-    sources().map<[SourceProps, Accessor<boolean>]>(source => [
-      source,
-      source.media ? createMediaQuery(source.media!) : () => true,
-    ]),
-  )
+  const queries = mapArray<SourceProps, [SourceProps, Accessor<boolean>]>(sources, source => [
+    source,
+    source.media ? createMediaQuery(source.media!) : () => true,
+  ])
 
   const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
 

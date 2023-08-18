@@ -1,5 +1,4 @@
 import { Img, Source, Picture } from 'solid-picture'
-
 import data from '../data.json'
 
 const baseUrl = `https://pub-a7ccd757582f4bd99e5c2364327c0f84.r2.dev`
@@ -23,16 +22,7 @@ export default function App() {
           naturalWidth={1280}
           naturalHeight={720}
         />
-        <Img
-          placeholderSrc={data.landscape}
-          naturalWidth={1280}
-          naturalHeight={720}
-          width="100%"
-          videoComponent={props => {
-            console.log(JSON.stringify(props))
-            return <video {...props} />
-          }}
-        />
+        <Img placeholderSrc={data.landscape} naturalWidth={1280} naturalHeight={720} width="100%" />
       </Picture>
       <Picture>
         <Img
