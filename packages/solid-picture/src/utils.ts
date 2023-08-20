@@ -1,4 +1,4 @@
-import { Sizeable } from './types'
+import { NaturalSize } from './types'
 
 export function isVideo(type?: string) {
   return type ? /^video\/\w+$/.test(type) : false
@@ -28,11 +28,11 @@ export function styleUrl<T extends { toString: () => string }>(value: T) {
   return `url(${value.toString()})`
 }
 
-export function styleAspectRatio({ naturalWidth, naturalHeight }: Partial<Sizeable>) {
+export function styleAspectRatio({ naturalWidth, naturalHeight }: Partial<NaturalSize>) {
   return naturalWidth && naturalHeight ? `${naturalWidth} / ${naturalHeight}` : 'auto'
 }
 
-export function aspectRatio({ naturalWidth, naturalHeight }: Partial<Sizeable>) {
+export function aspectRatio({ naturalWidth, naturalHeight }: Partial<NaturalSize>) {
   return naturalWidth && naturalHeight ? naturalHeight / naturalWidth : undefined
 }
 

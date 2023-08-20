@@ -1,28 +1,19 @@
 import {
   ComponentProps,
+  Resource,
   Suspense,
   createEffect,
   createResource,
   createSignal,
   createUniqueId,
-  mapArray,
-  mergeProps,
   onMount,
+  splitProps,
 } from 'solid-js'
 import { SourceProps } from './Source'
-import { Sizeable } from './types'
+import { NaturalSize } from './types'
 import { cssMedia, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
-import { createElementSize } from '@solid-primitives/resize-observer'
-import { Dynamic } from 'solid-js/web'
+import { NullableSize, createElementSize } from '@solid-primitives/resize-observer'
 import { usePicture } from './Picture'
-
-export type ImgMode = 'controlled' | 'suspended' | 'progressive'
-
-export type ImgProps = ComponentProps<'img'> &
-  Partial<Sizeable> & {
-    placeholderSrc?: string
-    mode?: ImgMode
-  }
 
 class ImageError extends Error {
   target: HTMLImageElement
@@ -33,11 +24,24 @@ class ImageError extends Error {
   }
 }
 
-function loadImage(props: ComponentProps<'img'>) {
+function createMounted() {
+  const [mounted, setMounted] = createSignal(false)
+
+  onMount(() => {
+    setMounted(true)
+  })
+
+  return mounted
+}
+
+export function loadImage(props: ComponentProps<'img'> & { size: NullableSize }) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
+    console.log('promise start')
     return (
       <img
         {...props}
+        width={props.size.width ?? undefined}
+        height={props.size.height ?? undefined}
         onLoad={event => {
           resolve(event.currentTarget)
         }}
@@ -54,13 +58,35 @@ function loadImage(props: ComponentProps<'img'>) {
   })
 }
 
-export function createImage(props: ComponentProps<'img'>) {
-  return createResource(() => loadImage(props), { ssrLoadFrom: 'initial' })
+export function createImage(
+  props: ComponentProps<'img'> & { size: NullableSize },
+): Resource<HTMLImageElement> {
+  const mounted = createMounted()
+  const [resource] = createResource(mounted, () => loadImage(props))
+  return resource
 }
 
-function imageCss(selector: string, props: ImgProps, sources: SourceProps[]) {
+export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
+  const image = createImage(props)
+
+  createEffect(() => {
+    if (image()) {
+      const { width, height, srcset, src } = image()!
+      console.log(image.state, { width, height, srcset, src })
+    }
+  })
+
+  return <>{image()}</>
+}
+
+export function imageCss(
+  selector: string,
+  props: Partial<NaturalSize> & {
+    placeholderSrc?: string
+  },
+  sources: SourceProps[],
+) {
   return [
-    // TODO: Build css from style object instead of props
     cssRule(selector, [
       ['aspect-ratio', styleAspectRatio(props)],
       ['background-image', maybe(props.placeholderSrc, styleUrl)],
@@ -79,77 +105,88 @@ function imageCss(selector: string, props: ImgProps, sources: SourceProps[]) {
   ].join(' ')
 }
 
-export function ImgStyle(props: ImgProps) {
+export function ImgStyle(
+  props: Partial<NaturalSize> & {
+    id: string
+    placeholderSrc?: string
+  },
+) {
   const { sources } = usePicture()
 
   return <style>{imageCss(`:where(#${props.id})`, props, sources())}</style>
 }
 
-export function ProgressiveImg(props: ComponentProps<'img'>) {
-  return <img {...props} />
+export function PlaceholderImg(props: ComponentProps<'img'>) {
+  const [, otherProps] = splitProps(props, ['src', 'srcset', 'sizes'])
+  const { currentSource } = usePicture()
+
+  return <img {...otherProps} src={currentSource()?.placeholderSrc ?? props.src} />
 }
 
-export function SuspendedImg(props: ComponentProps<'img'>) {
-  const [image] = createImage(props)
+export function Img(
+  props: ComponentProps<'img'> & Partial<NaturalSize> & { placeholderSrc?: string },
+) {
+  const [, imgProps] = splitProps(props, ['naturalWidth', 'naturalHeight', 'placeholderSrc'])
 
-  // TODO: image is the wrong size because it loaded without sizes attribute; handle placeholder with size
-
-  return <>{image()}</>
-}
-
-// const queries = createMemo(() =>
-//   sources().map<[SourceProps, Accessor<boolean>]>(source => [
-//     source,
-//     source.media ? createMediaQuery(source.media!) : () => true,
-//   ]),
-// )
-
-// const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
-
-export function Img(props: ImgProps) {
   const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
 
   const size = createElementSize(element)
 
   const defaultId = createUniqueId()
 
-  const imgProps = mergeProps(props, {
-    get id() {
-      return props.id ?? `img-${defaultId}`
-    },
-    get sizes() {
-      return maybe(size.width, width => stylePx(Math.round(width))) ?? props.sizes
-    },
-    get ref() {
-      return setElement
-    },
-  })
-
-  const [data, setData] = createSignal<string | undefined>()
-
-  onMount(() => {
-    const [test] = createResource<string>(() => {
-      console.log('fetcher')
-      return new Promise(resolve => {
-        setTimeout(() => resolve('data'), 5000)
-      })
-    })
-    createEffect(() => {
-      setData(test())
-    })
+  createEffect(() => {
+    console.log('element', element())
   })
 
   createEffect(() => {
-    console.log('result: ', data())
+    console.log('size', size.width, size.height)
   })
+
+  const id = () => props.id ?? `img-${defaultId}`
+
+  const sizes = () => maybe(size.width, width => stylePx(Math.round(width))) ?? props.sizes
 
   return (
     <>
-      <Suspense fallback="fallback">{data()}</Suspense>
-      {/* <ImgStyle {...imgProps} />
-      <Suspense fallback={<img id={imgProps.id} ref={imgProps.ref} width={imgProps.width} />}>
-        <SuspendedImg {...imgProps} />
-      </Suspense> */}
+      <ImgStyle
+        id={id()}
+        placeholderSrc={props.placeholderSrc}
+        naturalWidth={props.naturalWidth}
+        naturalHeight={props.naturalHeight}
+      />
+      {/* <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} /> */}
+      <Suspense
+        fallback={
+          <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
+        }
+      >
+        <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
+        {/* <Suspense fallback={<SuspendedImg {...sharedProps} />}>
+          <SuspendedVideoImg {...sharedProps} />
+        </Suspense> */}
+      </Suspense>
     </>
   )
+}
+
+{
+  /* <Picture>
+  <Source
+    media="(orientation: portrait)"
+    data-placeholder="portrait.placeholder.png"
+    srcset="portrait.png"
+    data-video="portrait.mp4"
+  />
+  <Source
+    media="(orientation: landscape)"
+    data-placeholder="landscape.placeholder.png"
+    srcset="landscape.png"
+    data-video="landscape.mp4"
+  />
+  <Suspense fallback={<PlaceholderImg />}>
+    <Suspense fallback={<SuspendedImg />}>
+      <SuspendedVideoImg />
+    </Suspense>
+  </Suspense>
+</Picture> */
 }
