@@ -1,160 +1,46 @@
-import { createMediaQuery } from '@solid-primitives/media'
-import {
-  Accessor,
-  Component,
-  ComponentProps,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  mapArray,
-  Show,
-  splitProps,
-} from 'solid-js'
-import { SourceProps } from './Source'
-import { Sizeable } from './types'
-import { cssMedia, cssRule, isVideo, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
-import {
-  createToken,
-  createTokenizer,
-  isToken,
-  TokenElement,
-} from '@solid-primitives/jsx-tokenizer'
+import { ComponentProps, Suspense, createSignal, createUniqueId, splitProps } from 'solid-js'
+import { NaturalSize } from './types'
+import { maybe } from './utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
-import { Dynamic } from 'solid-js/web'
+import { ImgStyle } from './ImgStyle'
+import { PlaceholderImg } from './PlaceholderImg'
+import { SuspendedImg } from './SuspendedImg'
+import { stylePx } from './css'
+import { SuspendedVideoImg } from './SuspendedVideoImg'
 
-export type ImgProps = ComponentProps<'img'> &
-  Partial<Sizeable> & {
-    placeholderSrc?: string
-    sources?: SourceProps[]
-    videoComponent?: Component<ComponentProps<'video'>>
-  }
-
-export interface ImgToken {
-  props: ImgProps
-}
-
-export const imgTokenizer = createTokenizer<ImgToken>({
-  name: 'Img Tokenizer',
-})
-
-export function isImgToken(value: any): value is TokenElement<ImgToken> {
-  return isToken(imgTokenizer, value)
-}
-
-export function VideoElement(
-  props: ComponentProps<'video'> & {
-    srcset?: string
-    component?: Component<ComponentProps<'video'>>
-  },
+export function Img(
+  props: ComponentProps<'img'> &
+    ComponentProps<'video'> &
+    Partial<NaturalSize> & { placeholderSrc?: string },
 ) {
-  const [localProps, otherProps] = splitProps(props, ['src', 'srcset', 'component'])
-  return (
-    <Dynamic
-      {...otherProps}
-      component={localProps.component ?? 'video'}
-      src={localProps.src ?? localProps.srcset}
-      autoplay
-      playsinline
-      muted
-      loop
-    />
-  )
-}
+  const [, imgProps] = splitProps(props, ['naturalWidth', 'naturalHeight', 'placeholderSrc'])
 
-export function ImgElement(props: ImgProps) {
-  const [localProps, otherProps] = splitProps(
-    props,
-    [
-      'naturalWidth',
-      'naturalHeight',
-      'placeholderSrc',
-      'sizes',
-      'sources',
-      'src',
-      'srcset',
-      'id',
-      'videoComponent',
-    ],
-    ['width', 'height', 'style', 'class', 'classList'],
-  )
-
-  const [element, setElement] = createSignal<HTMLImageElement>()
+  const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
 
   const size = createElementSize(element)
 
   const defaultId = createUniqueId()
-  const id = () => localProps.id ?? `img-${defaultId}`
 
-  const sources = () => localProps.sources ?? []
+  const id = () => props.id ?? `img-${defaultId}`
 
-  const queries = mapArray<SourceProps, [SourceProps, Accessor<boolean>]>(sources, source => [
-    source,
-    source.media ? createMediaQuery(source.media!) : () => true,
-  ])
-
-  const currentSource = createMemo(() => queries().find(([, match]) => match())?.[0])
-
-  const isVideoSource = () => (currentSource() ? isVideo(currentSource()?.type) : false)
-
-  const isAutoSizes = () => localProps.sizes === 'auto'
-
-  const isReady = () => (isAutoSizes() ? size.width != null : true)
+  const sizes = () => maybe(width => stylePx(Math.round(width)), size.width) ?? props.sizes
 
   return (
     <>
-      <style>
-        {[
-          cssRule(`:where(#${id()})`, [
-            ['aspect-ratio', styleAspectRatio(localProps)],
-            ['background-image', maybe(localProps.placeholderSrc, styleUrl)],
-          ]),
-          ...sources()
-            .filter(source => source.media != null)
-            .map(source =>
-              cssMedia(
-                source.media!,
-                cssRule(`:where(#${id()})`, [
-                  ['aspect-ratio', styleAspectRatio(source)],
-                  ['background-image', maybe(source.placeholderSrc, styleUrl)],
-                ]),
-              ),
-            ),
-        ].join(' ')}
-      </style>
-      <Show
-        when={isVideoSource()}
+      <ImgStyle id={id()} naturalWidth={props.naturalWidth} naturalHeight={props.naturalHeight} />
+      <Suspense
         fallback={
-          <img
-            {...otherProps}
-            ref={setElement}
-            src={isReady() ? localProps.src : undefined}
-            srcset={isReady() ? localProps.srcset : undefined}
-            sizes={
-              isAutoSizes()
-                ? maybe(size.width, width => stylePx(Math.round(width)))
-                : localProps.sizes
+          <Suspense
+            fallback={
+              <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
             }
-            id={id()}
-          />
+          >
+            <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
+          </Suspense>
         }
       >
-        <VideoElement
-          {...otherProps}
-          component={localProps.videoComponent}
-          src={currentSource()?.src}
-          srcset={currentSource()?.srcset}
-          id={id()}
-        />
-      </Show>
+        <SuspendedVideoImg {...imgProps} id={id()} ref={setElement} />
+      </Suspense>
     </>
   )
 }
-
-export const Img = createToken(
-  imgTokenizer,
-  (props: ImgProps) => {
-    return { props }
-  },
-  ImgElement,
-)

@@ -8,32 +8,29 @@ export default function App() {
     <>
       <Picture>
         <Source
-          type="video/mp4"
           placeholderSrc={data.portrait}
-          srcset={`${baseUrl}/portrait.optimized.mp4`}
+          videoSrc={`${baseUrl}/portrait.optimized.mp4`}
+          // srcset={`${baseUrl}/portrait-1280.png 1280w, ${baseUrl}/portrait-1920.png 1920w`}
           media="(orientation: portrait)"
           naturalWidth={1080}
           naturalHeight={1920}
         />
         <Source
-          type="video/mp4"
           placeholderSrc={data.landscape}
-          srcset={`${baseUrl}/landscape.optimized.mp4`}
+          srcset={`${baseUrl}/landscape-1280.png 1280w, ${baseUrl}/landscape-1920.png 1920w`}
+          videoSrc={`${baseUrl}/landscape.optimized.mp4`}
           naturalWidth={1280}
           naturalHeight={720}
         />
         <Img placeholderSrc={data.landscape} naturalWidth={1280} naturalHeight={720} width="100%" />
       </Picture>
-      <Picture>
-        <Img
-          placeholderSrc={data.landscape}
-          srcset={`${baseUrl}/landscape-1280.png 1280w, ${baseUrl}/landscape-1920.png 1920w`}
-          sizes="auto"
-          naturalWidth={854}
-          naturalHeight={480}
-          width="50%"
-        />
-      </Picture>
+      {/* <Img
+        placeholderSrc={data.landscape}
+        srcset={`${baseUrl}/landscape-1280.png 1280w, ${baseUrl}/landscape-1920.png 1920w`}
+        naturalWidth={854}
+        naturalHeight={480}
+        width="50%"
+      /> */}
     </>
   )
 }

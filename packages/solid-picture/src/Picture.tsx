@@ -1,30 +1,72 @@
 import { resolveTokens } from '@solid-primitives/jsx-tokenizer'
-import { ComponentProps, createMemo, For } from 'solid-js'
-import { ImgElement, imgTokenizer, isImgToken } from './Img'
-import { isSourceToken, sourceTokenizer } from './Source'
+import {
+  ComponentProps,
+  createMemo,
+  createContext,
+  useContext,
+  Accessor,
+  createEffect,
+  untrack,
+  createSignal,
+  For,
+} from 'solid-js'
+import { SourceProps, isSourceToken, sourceTokenizer } from './Source'
+import { createMediaQuery } from '@solid-primitives/media'
+
+const PictureContext = createContext<{
+  sources: Accessor<SourceProps[]>
+  currentSource: Accessor<SourceProps | undefined>
+}>({
+  sources: () => [],
+  currentSource: () => undefined,
+})
+
+export function usePicture() {
+  return useContext(PictureContext)
+}
 
 export function Picture(props: ComponentProps<'picture'>) {
-  const tokens = resolveTokens([sourceTokenizer, imgTokenizer], () => props.children, {
-    includeJSXElements: true,
-  })
-
-  const sourceTokens = createMemo(() =>
-    tokens()
-      .filter(isSourceToken)
-      .map(token => token.data),
-  )
+  const [sources, setSources] = createSignal<SourceProps[]>([])
+  const [currentSource, setCurrentSource] = createSignal<SourceProps | undefined>()
 
   return (
-    <picture {...props}>
-      <For each={tokens()}>
-        {token =>
-          isImgToken(token) ? (
-            <ImgElement {...token.data.props} sources={sourceTokens().map(data => data.props)} />
-          ) : (
-            <></>
-          )
-        }
-      </For>
-    </picture>
+    <PictureContext.Provider value={{ sources, currentSource }}>
+      {untrack(() => {
+        const tokens = resolveTokens(sourceTokenizer, () => props.children, {
+          includeJSXElements: true,
+        })
+
+        const sources = createMemo(() =>
+          tokens()
+            .filter(isSourceToken)
+            .map(source => source.data.props),
+        )
+
+        const queries = createMemo(() =>
+          sources().map<[SourceProps, Accessor<boolean>]>(props => [
+            props,
+            props.media ? createMediaQuery(props.media!) : () => true,
+          ]),
+        )
+
+        // TODO: ensure chosen image is actually the one chosen automatically by the browser. These may be different depending on type and media props as well as source order
+
+        // TODO: support loading and decoding props
+
+        createEffect(() => {
+          setSources(sources())
+        })
+
+        createEffect(() => {
+          setCurrentSource(queries().find(([, match]) => match())?.[0])
+        })
+
+        return (
+          <picture {...props}>
+            <For each={tokens()}>{token => (isSourceToken(token) ? <></> : token)}</For>
+          </picture>
+        )
+      })}
+    </PictureContext.Provider>
   )
 }
