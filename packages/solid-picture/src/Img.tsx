@@ -30,16 +30,16 @@ export function Img(
       <ImgStyle id={id()} naturalWidth={props.naturalWidth} naturalHeight={props.naturalHeight} />
       <Suspense
         fallback={
-          <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
+          <Suspense
+            fallback={
+              <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
+            }
+          >
+            <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
+          </Suspense>
         }
       >
-        <Suspense
-          fallback={
-            <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
-          }
-        >
-          <SuspendedVideoImg {...imgProps} id={id()} ref={setElement} />
-        </Suspense>
+        <SuspendedVideoImg {...imgProps} id={id()} ref={setElement} />
       </Suspense>
     </>
   )

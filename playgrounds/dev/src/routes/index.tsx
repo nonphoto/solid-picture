@@ -24,13 +24,13 @@ export default function App() {
         />
         <Img placeholderSrc={data.landscape} naturalWidth={1280} naturalHeight={720} width="100%" />
       </Picture>
-      <Img
+      {/* <Img
         placeholderSrc={data.landscape}
         srcset={`${baseUrl}/landscape-1280.png 1280w, ${baseUrl}/landscape-1920.png 1920w`}
         naturalWidth={854}
         naturalHeight={480}
         width="50%"
-      />
+      /> */}
     </>
   )
 }

@@ -66,15 +66,13 @@ export function createImage(
   return resource
 }
 
-function withSource<T extends ComponentProps<'img'>>(props: T, source: SourceProps) {
+function withSource<T extends ComponentProps<'img'>>(props: T, source: SourceProps = {}) {
   const [imgProps] = splitProps(source, ['srcset'])
   return mergeProps(props, imgProps)
 }
 
 export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
   const { currentSource } = usePicture()
-  const image = createImage(() =>
-    currentSource() ? withSource(props, currentSource()!) : undefined,
-  )
+  const image = createImage(() => withSource(props, currentSource()))
   return <>{image()}</>
 }

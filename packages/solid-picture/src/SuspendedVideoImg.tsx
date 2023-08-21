@@ -25,7 +25,6 @@ export function loadVideo(props: ComponentProps<'video'>): Promise<HTMLVideoElem
   return new Promise<HTMLVideoElement>((resolve, reject) => {
     const [, videoProps] = splitProps(props, ['ref'])
     const [resolved, setResolved] = createSignal<HTMLVideoElement>()
-    console.log(videoProps)
 
     createEffect(() => {
       if (resolved() && typeof props.ref === 'function') {
@@ -37,7 +36,6 @@ export function loadVideo(props: ComponentProps<'video'>): Promise<HTMLVideoElem
       <video
         {...videoProps}
         onCanPlayThrough={event => {
-          console.log(event)
           setResolved(event.currentTarget)
           resolve(event.currentTarget)
         }}
@@ -71,7 +69,7 @@ export function createVideo(
 
 function withSource<T extends ComponentProps<'video'> & { videoSrc?: string }>(
   props: T,
-  source: SourceProps,
+  source: SourceProps = {},
 ) {
   return mergeProps(props, {
     get src() {
@@ -82,8 +80,6 @@ function withSource<T extends ComponentProps<'video'> & { videoSrc?: string }>(
 
 export function SuspendedVideoImg(props: ComponentProps<'video'>) {
   const { currentSource } = usePicture()
-  const video = createVideo(() =>
-    currentSource() ? withSource(props, currentSource()!) : undefined,
-  )
+  const video = createVideo(() => withSource(props, currentSource()))
   return <>{video()}</>
 }
