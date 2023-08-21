@@ -1,139 +1,11 @@
-import {
-  ComponentProps,
-  Resource,
-  Suspense,
-  createEffect,
-  createResource,
-  createSignal,
-  createUniqueId,
-  mergeProps,
-  onMount,
-  splitProps,
-} from 'solid-js'
+import { ComponentProps, Suspense, createSignal, createUniqueId, splitProps } from 'solid-js'
 import { NaturalSize } from './types'
-import { cssMediaRule, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
-import { NullableSize, createElementSize } from '@solid-primitives/resize-observer'
-import { usePicture } from './Picture'
-import { MaybeAccessor, access } from '@solid-primitives/utils'
-import { SourceProps } from './Source'
-
-class ImageError extends Error {
-  target: HTMLImageElement
-
-  constructor(message: string, target: HTMLImageElement) {
-    super(message)
-    this.target = target
-  }
-}
-
-function createMounted() {
-  const [mounted, setMounted] = createSignal(false)
-
-  onMount(() => {
-    setMounted(true)
-  })
-
-  return mounted
-}
-
-export function loadImage(props: ComponentProps<'img'> & { size: NullableSize }) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const [, imgProps] = splitProps(props, ['ref', 'size'])
-    const [resolved, setResolved] = createSignal<HTMLImageElement>()
-
-    console.log(props.srcset)
-
-    createEffect(() => {
-      if (resolved() && typeof props.ref === 'function') {
-        props.ref(resolved()!)
-      }
-    })
-
-    return (
-      <img
-        {...imgProps}
-        width={resolved() ? undefined : props.size.width ?? undefined}
-        height={resolved() ? undefined : props.size.height ?? undefined}
-        onLoad={event => {
-          setResolved(event.currentTarget)
-          resolve(event.currentTarget)
-        }}
-        onError={event => {
-          console.log('error')
-          reject(
-            new ImageError(
-              `Unable to load image for src ${event.currentTarget.currentSrc}`,
-              event.currentTarget,
-            ),
-          )
-        }}
-      />
-    ) as HTMLImageElement
-  })
-}
-
-export function createImage(
-  props: MaybeAccessor<(ComponentProps<'img'> & { size: NullableSize }) | undefined>,
-): Resource<HTMLImageElement> {
-  const mounted = createMounted()
-  const [resource] = createResource(
-    () => mounted() && access(props),
-    props => loadImage(props),
-  )
-  return resource
-}
-
-function withSource<T extends object>(props: T, source: SourceProps) {
-  const [imgProps] = splitProps(source, ['srcset'])
-  return mergeProps(props, imgProps)
-}
-
-export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
-  const { currentSource } = usePicture()
-  const image = createImage(() =>
-    currentSource() ? withSource(props, currentSource()!) : undefined,
-  )
-  return <>{image()}</>
-}
-
-export function ImgStyle(
-  props: Partial<NaturalSize> & {
-    id: string
-    placeholderSrc?: string
-  },
-) {
-  const { sources } = usePicture()
-  const selector = () => `:where(#${props.id})`
-
-  return (
-    <style>
-      {[
-        cssRule(selector(), [
-          ['aspect-ratio', styleAspectRatio(props)],
-          ['background-image', maybe(styleUrl, props.placeholderSrc)],
-        ]),
-        ...sources()
-          .filter(source => source.media != null)
-          .map(source =>
-            cssMediaRule(
-              source.media!,
-              cssRule(selector(), [
-                ['aspect-ratio', styleAspectRatio(source)],
-                ['background-image', maybe(styleUrl, source.placeholderSrc)],
-              ]),
-            ),
-          ),
-      ]}
-    </style>
-  )
-}
-
-export function PlaceholderImg(props: ComponentProps<'img'>) {
-  const [, otherProps] = splitProps(props, ['src', 'srcset', 'sizes'])
-  const { currentSource } = usePicture()
-
-  return <img {...otherProps} src={currentSource()?.placeholderSrc ?? props.src} />
-}
+import { maybe } from './utils'
+import { createElementSize } from '@solid-primitives/resize-observer'
+import { ImgStyle } from './ImgStyle'
+import { PlaceholderImg } from './PlaceholderImg'
+import { SuspendedImg } from './SuspendedImg'
+import { stylePx } from './css'
 
 export function Img(
   props: ComponentProps<'img'> & Partial<NaturalSize> & { placeholderSrc?: string },
@@ -152,12 +24,7 @@ export function Img(
 
   return (
     <>
-      <ImgStyle
-        id={id()}
-        placeholderSrc={props.placeholderSrc}
-        naturalWidth={props.naturalWidth}
-        naturalHeight={props.naturalHeight}
-      />
+      <ImgStyle id={id()} naturalWidth={props.naturalWidth} naturalHeight={props.naturalHeight} />
       <Suspense
         fallback={
           <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
@@ -170,26 +37,4 @@ export function Img(
       </Suspense>
     </>
   )
-}
-
-{
-  /* <Picture>
-  <Source
-    media="(orientation: portrait)"
-    data-placeholder="portrait.placeholder.png"
-    srcset="portrait.png"
-    data-video="portrait.mp4"
-  />
-  <Source
-    media="(orientation: landscape)"
-    data-placeholder="landscape.placeholder.png"
-    srcset="landscape.png"
-    data-video="landscape.mp4"
-  />
-  <Suspense fallback={<PlaceholderImg />}>
-    <Suspense fallback={<SuspendedImg />}>
-      <SuspendedVideoImg />
-    </Suspense>
-  </Suspense>
-</Picture> */
 }
