@@ -1,10 +1,27 @@
+import { MaybeAccessor, access } from '@solid-primitives/utils'
 import { NaturalSize } from './types'
 
-export function isVideo(type?: string) {
+export type MapMaybeAccessor<T> = T extends any[]
+  ? {
+      [K in keyof T]: MaybeAccessor<T[K] | undefined>
+    }
+  : never
+
+export function maybe<F extends (...args: any[]) => any>(
+  fn: F,
+  ...args: MapMaybeAccessor<Parameters<F>>
+): ReturnType<F> | undefined {
+  const values = args.map(access)
+  if (!values.some(value => value == null)) {
+    return fn(...values)
+  }
+}
+
+export function isVideoMediaType(type?: string) {
   return type ? /^video\/\w+$/.test(type) : false
 }
 
-export function cssMedia(media: string, rules: string) {
+export function cssMediaRule(media: string, rules: string) {
   return `@media ${media} { ${rules} }`
 }
 
@@ -14,10 +31,6 @@ export function cssRule(selector: string, properties: [string, string | undefine
     .map(([name, value]) => `${name}: ${value}`)
     .join('; ')
   return `${selector} { ${propertiesString} }`
-}
-
-export function maybe<T, U>(value: T, fn: (just: NonNullable<T>) => U) {
-  return value != null ? fn(value) : undefined
 }
 
 export function stylePx<T extends { toString: () => string }>(value: T) {

@@ -60,8 +60,9 @@
     "solid-js": "^1.7.11"
   },
   "dependencies": {
-    "@solid-primitives/jsx-tokenizer": "1.0.7",
-    "@solid-primitives/media": "2.2.4",
-    "@solid-primitives/resize-observer": "2.0.20"
+    "@solid-primitives/jsx-tokenizer": "1.0.3",
+    "@solid-primitives/media": "2.1.6",
+    "@solid-primitives/resize-observer": "2.0.15",
+    "@solid-primitives/utils": "6.2.1"
   }
 }

@@ -8,6 +8,7 @@ import {
   createEffect,
   untrack,
   createSignal,
+  For,
 } from 'solid-js'
 import { SourceProps, isSourceToken, sourceTokenizer } from './Source'
 import { createMediaQuery } from '@solid-primitives/media'
@@ -60,7 +61,11 @@ export function Picture(props: ComponentProps<'picture'>) {
           setCurrentSource(queries().find(([, match]) => match())?.[0])
         })
 
-        return <picture {...props}>{tokens()}</picture>
+        return (
+          <picture {...props}>
+            <For each={tokens()}>{token => (isSourceToken(token) ? <></> : token)}</For>
+          </picture>
+        )
       })}
     </PictureContext.Provider>
   )

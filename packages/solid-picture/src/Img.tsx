@@ -6,14 +6,16 @@ import {
   createResource,
   createSignal,
   createUniqueId,
+  mergeProps,
   onMount,
   splitProps,
 } from 'solid-js'
-import { SourceProps } from './Source'
 import { NaturalSize } from './types'
-import { cssMedia, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
+import { cssMediaRule, cssRule, maybe, styleAspectRatio, stylePx, styleUrl } from './utils'
 import { NullableSize, createElementSize } from '@solid-primitives/resize-observer'
 import { usePicture } from './Picture'
+import { MaybeAccessor, access } from '@solid-primitives/utils'
+import { SourceProps } from './Source'
 
 class ImageError extends Error {
   target: HTMLImageElement
@@ -36,16 +38,28 @@ function createMounted() {
 
 export function loadImage(props: ComponentProps<'img'> & { size: NullableSize }) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
-    console.log('promise start')
+    const [, imgProps] = splitProps(props, ['ref', 'size'])
+    const [resolved, setResolved] = createSignal<HTMLImageElement>()
+
+    console.log(props.srcset)
+
+    createEffect(() => {
+      if (resolved() && typeof props.ref === 'function') {
+        props.ref(resolved()!)
+      }
+    })
+
     return (
       <img
-        {...props}
-        width={props.size.width ?? undefined}
-        height={props.size.height ?? undefined}
+        {...imgProps}
+        width={resolved() ? undefined : props.size.width ?? undefined}
+        height={resolved() ? undefined : props.size.height ?? undefined}
         onLoad={event => {
+          setResolved(event.currentTarget)
           resolve(event.currentTarget)
         }}
         onError={event => {
+          console.log('error')
           reject(
             new ImageError(
               `Unable to load image for src ${event.currentTarget.currentSrc}`,
@@ -59,50 +73,27 @@ export function loadImage(props: ComponentProps<'img'> & { size: NullableSize })
 }
 
 export function createImage(
-  props: ComponentProps<'img'> & { size: NullableSize },
+  props: MaybeAccessor<(ComponentProps<'img'> & { size: NullableSize }) | undefined>,
 ): Resource<HTMLImageElement> {
   const mounted = createMounted()
-  const [resource] = createResource(mounted, () => loadImage(props))
+  const [resource] = createResource(
+    () => mounted() && access(props),
+    props => loadImage(props),
+  )
   return resource
 }
 
-export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
-  const image = createImage(props)
-
-  createEffect(() => {
-    if (image()) {
-      const { width, height, srcset, src } = image()!
-      console.log(image.state, { width, height, srcset, src })
-    }
-  })
-
-  return <>{image()}</>
+function withSource<T extends object>(props: T, source: SourceProps) {
+  const [imgProps] = splitProps(source, ['srcset'])
+  return mergeProps(props, imgProps)
 }
 
-export function imageCss(
-  selector: string,
-  props: Partial<NaturalSize> & {
-    placeholderSrc?: string
-  },
-  sources: SourceProps[],
-) {
-  return [
-    cssRule(selector, [
-      ['aspect-ratio', styleAspectRatio(props)],
-      ['background-image', maybe(props.placeholderSrc, styleUrl)],
-    ]),
-    ...sources
-      .filter(source => source.media != null)
-      .map(source =>
-        cssMedia(
-          source.media!,
-          cssRule(selector, [
-            ['aspect-ratio', styleAspectRatio(source)],
-            ['background-image', maybe(source.placeholderSrc, styleUrl)],
-          ]),
-        ),
-      ),
-  ].join(' ')
+export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
+  const { currentSource } = usePicture()
+  const image = createImage(() =>
+    currentSource() ? withSource(props, currentSource()!) : undefined,
+  )
+  return <>{image()}</>
 }
 
 export function ImgStyle(
@@ -112,8 +103,29 @@ export function ImgStyle(
   },
 ) {
   const { sources } = usePicture()
+  const selector = () => `:where(#${props.id})`
 
-  return <style>{imageCss(`:where(#${props.id})`, props, sources())}</style>
+  return (
+    <style>
+      {[
+        cssRule(selector(), [
+          ['aspect-ratio', styleAspectRatio(props)],
+          ['background-image', maybe(styleUrl, props.placeholderSrc)],
+        ]),
+        ...sources()
+          .filter(source => source.media != null)
+          .map(source =>
+            cssMediaRule(
+              source.media!,
+              cssRule(selector(), [
+                ['aspect-ratio', styleAspectRatio(source)],
+                ['background-image', maybe(styleUrl, source.placeholderSrc)],
+              ]),
+            ),
+          ),
+      ]}
+    </style>
+  )
 }
 
 export function PlaceholderImg(props: ComponentProps<'img'>) {
@@ -134,17 +146,9 @@ export function Img(
 
   const defaultId = createUniqueId()
 
-  createEffect(() => {
-    console.log('element', element())
-  })
-
-  createEffect(() => {
-    console.log('size', size.width, size.height)
-  })
-
   const id = () => props.id ?? `img-${defaultId}`
 
-  const sizes = () => maybe(size.width, width => stylePx(Math.round(width))) ?? props.sizes
+  const sizes = () => maybe(width => stylePx(Math.round(width)), size.width) ?? props.sizes
 
   return (
     <>
@@ -154,7 +158,6 @@ export function Img(
         naturalWidth={props.naturalWidth}
         naturalHeight={props.naturalHeight}
       />
-      {/* <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} /> */}
       <Suspense
         fallback={
           <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
