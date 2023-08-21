@@ -6,9 +6,12 @@ import { ImgStyle } from './ImgStyle'
 import { PlaceholderImg } from './PlaceholderImg'
 import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
+import { SuspendedVideoImg } from './SuspendedVideoImg'
 
 export function Img(
-  props: ComponentProps<'img'> & Partial<NaturalSize> & { placeholderSrc?: string },
+  props: ComponentProps<'img'> &
+    ComponentProps<'video'> &
+    Partial<NaturalSize> & { placeholderSrc?: string },
 ) {
   const [, imgProps] = splitProps(props, ['naturalWidth', 'naturalHeight', 'placeholderSrc'])
 
@@ -30,10 +33,13 @@ export function Img(
           <PlaceholderImg {...imgProps} id={id()} src={props.placeholderSrc} ref={setElement} />
         }
       >
-        <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
-        {/* <Suspense fallback={<SuspendedImg {...sharedProps} />}>
-          <SuspendedVideoImg {...sharedProps} />
-        </Suspense> */}
+        <Suspense
+          fallback={
+            <SuspendedImg {...imgProps} id={id()} size={size} sizes={sizes()} ref={setElement} />
+          }
+        >
+          <SuspendedVideoImg {...imgProps} id={id()} ref={setElement} />
+        </Suspense>
       </Suspense>
     </>
   )

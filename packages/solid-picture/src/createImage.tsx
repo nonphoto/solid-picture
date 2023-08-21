@@ -40,7 +40,6 @@ export function loadImage(props: ComponentProps<'img'> & { size: NullableSize })
           resolve(event.currentTarget)
         }}
         onError={event => {
-          console.log('error')
           reject(
             new ImageError(
               `Unable to load image for src ${event.currentTarget.currentSrc}`,
