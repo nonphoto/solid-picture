@@ -7,13 +7,21 @@ import { PlaceholderImg } from './PlaceholderImg'
 import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
 import { SuspendedVideoImg } from './SuspendedVideoImg'
+import { Dynamic } from 'solid-js/web'
+import { SuspendedHlsVideoImg } from './SuspendedVideoImgHls'
 
 export function Img(
   props: ComponentProps<'img'> &
     ComponentProps<'video'> &
-    Partial<NaturalSize> & { placeholderSrc?: string },
+    Partial<NaturalSize> & { placeholderSrc?: string; videoSrc?: string; hls?: boolean },
 ) {
-  const [, imgProps] = splitProps(props, ['naturalWidth', 'naturalHeight', 'placeholderSrc'])
+  const [, imgProps] = splitProps(props, [
+    'naturalWidth',
+    'naturalHeight',
+    'placeholderSrc',
+    'videoSrc',
+    'hls',
+  ])
 
   const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
 
@@ -39,7 +47,12 @@ export function Img(
           </Suspense>
         }
       >
-        <SuspendedVideoImg {...imgProps} id={id()} ref={setElement} />
+        <Dynamic
+          component={props.hls ? SuspendedHlsVideoImg : SuspendedVideoImg}
+          {...imgProps}
+          id={id()}
+          ref={setElement}
+        />
       </Suspense>
     </>
   )

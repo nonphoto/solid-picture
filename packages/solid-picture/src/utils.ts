@@ -1,6 +1,7 @@
 import { access } from '@solid-primitives/utils'
-import { createSignal, onMount } from 'solid-js'
+import { createResource, createSignal, onMount } from 'solid-js'
 import { MapMaybeAccessor } from './types'
+import { createHydratableSingletonRoot } from '@solid-primitives/rootless'
 
 export function maybe<F extends (...args: any[]) => any>(
   fn: F,
@@ -12,10 +13,6 @@ export function maybe<F extends (...args: any[]) => any>(
   }
 }
 
-export function isVideoMediaType(type?: string) {
-  return type ? /^video\/\w+$/.test(type) : false
-}
-
 export function createMounted() {
   const [mounted, setMounted] = createSignal(false)
 
@@ -25,3 +22,9 @@ export function createMounted() {
 
   return mounted
 }
+
+export const useHlsResource = createHydratableSingletonRoot(() => {
+  const mounted = createMounted()
+  const [resource] = createResource(mounted, () => import('hls.js'))
+  return resource
+})
