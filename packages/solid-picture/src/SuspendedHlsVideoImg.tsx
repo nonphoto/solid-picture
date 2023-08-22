@@ -32,7 +32,7 @@ export function createHlsVideo(
     props => {
       return new Promise<HTMLVideoElement>((resolve, reject) => {
         createRoot(() => {
-          const [, videoProps] = splitProps(props, ['ref'])
+          const [, videoProps] = splitProps(props, ['ref', 'src'])
           const [resolved, setResolved] = createSignal<HTMLVideoElement>()
 
           createEffect(() => {
@@ -41,21 +41,14 @@ export function createHlsVideo(
             }
           })
 
-          createEffect(() => {
-            if (resolved()) {
-              element.play()
-            }
-          })
-
           const element = (
-            <video {...videoProps} muted loop playsinline autoplay={false} />
+            <video {...videoProps} muted loop playsinline autoplay />
           ) as HTMLVideoElement
 
           createEffect(() => {
             if (props.src) {
               const Hls = hlsResource()!.default
               const hls = new Hls()
-              console.log(props.src)
               hls.loadSource(props.src)
               hls.attachMedia(element)
               hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -64,7 +57,10 @@ export function createHlsVideo(
               })
               hls.on(Hls.Events.ERROR, () => {
                 reject(
-                  new HlsVideoError(`Unable to load video for src ${element.currentSrc}`, element),
+                  new HlsVideoError(
+                    `Unable to load HLS video for src '${element.currentSrc}'`,
+                    element,
+                  ),
                 )
               })
               onCleanup(() => {
@@ -90,7 +86,8 @@ function withSource<T extends ComponentProps<'video'> & { videoSrc?: string }>(
   })
 }
 
-export function SuspendedHlsVideoImg(props: ComponentProps<'video'>) {
+export function SuspendedHlsVideoImg(props: ComponentProps<'video'> & { videoSrc?: string }) {
+  console.log(props.videoSrc)
   const { currentSource } = usePicture()
   const video = createHlsVideo(() => withSource(props, currentSource()))
   return <>{video()}</>

@@ -8,7 +8,7 @@ import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
 import { SuspendedVideoImg } from './SuspendedVideoImg'
 import { Dynamic } from 'solid-js/web'
-import { SuspendedHlsVideoImg } from './SuspendedVideoImgHls'
+import { SuspendedHlsVideoImg } from './SuspendedHlsVideoImg'
 
 export function Img(
   props: ComponentProps<'img'> &
@@ -50,6 +50,7 @@ export function Img(
         <Dynamic
           component={props.hls ? SuspendedHlsVideoImg : SuspendedVideoImg}
           {...imgProps}
+          videoSrc={props.videoSrc}
           id={id()}
           ref={setElement}
         />

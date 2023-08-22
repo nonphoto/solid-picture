@@ -42,7 +42,7 @@ export function loadVideo(props: ComponentProps<'video'>): Promise<HTMLVideoElem
         onError={event => {
           reject(
             new VideoError(
-              `Unable to load video for src ${event.currentTarget.currentSrc}`,
+              `Unable to load video for src '${event.currentTarget.currentSrc}'`,
               event.currentTarget,
             ),
           )
