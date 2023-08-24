@@ -1,4 +1,4 @@
-import { access } from '@solid-primitives/utils'
+import { Size, access } from '@solid-primitives/utils'
 import { createResource, createSignal, onMount } from 'solid-js'
 import { MapMaybeAccessor } from './types'
 import { createHydratableSingletonRoot } from '@solid-primitives/rootless'
@@ -28,3 +28,12 @@ export const useHlsResource = createHydratableSingletonRoot(() => {
   const [resource] = createResource(mounted, () => import('hls.js'))
   return resource
 })
+
+export function isSize(value: any): value is Size {
+  return (
+    value &&
+    typeof value === 'object' &&
+    typeof value.width === 'number' &&
+    typeof value.height === 'number'
+  )
+}

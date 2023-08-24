@@ -1,4 +1,4 @@
-import { NaturalSize } from './types'
+import { NullableSize } from '@solid-primitives/resize-observer'
 
 export function cssMediaRule(media: string, rules: string) {
   return `@media ${media} { ${rules} }`
@@ -20,6 +20,6 @@ export function styleUrl<T extends { toString: () => string }>(value: T) {
   return `url(${value.toString()})`
 }
 
-export function styleAspectRatio({ naturalWidth, naturalHeight }: Partial<NaturalSize>) {
-  return naturalWidth && naturalHeight ? `${naturalWidth} / ${naturalHeight}` : 'auto'
+export function styleAspectRatio({ width, height }: NullableSize) {
+  return width && height ? `${width} / ${height}` : 'auto'
 }

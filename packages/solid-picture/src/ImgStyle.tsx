@@ -1,14 +1,9 @@
 import { usePicture } from './Picture'
-import { NaturalSize } from './types'
 import { cssMediaRule, cssRule, styleAspectRatio, styleUrl } from './css'
 import { maybe } from './utils'
+import { Size } from '@solid-primitives/utils'
 
-export function ImgStyle(
-  props: Partial<NaturalSize> & {
-    id: string
-    placeholderSrc?: string
-  },
-) {
+export function ImgStyle(props: { id: string; naturalSize?: Size; placeholderSrc?: string }) {
   const { sources } = usePicture()
   const selector = () => `:where(#${props.id})`
 
@@ -16,7 +11,7 @@ export function ImgStyle(
     <style>
       {[
         cssRule(selector(), [
-          ['aspect-ratio', styleAspectRatio(props)],
+          ['aspect-ratio', maybe(styleAspectRatio, props.naturalSize)],
           ['background-image', maybe(styleUrl, props.placeholderSrc)],
         ]),
         ...sources()
@@ -25,7 +20,7 @@ export function ImgStyle(
             cssMediaRule(
               source.media!,
               cssRule(selector(), [
-                ['aspect-ratio', styleAspectRatio(source)],
+                ['aspect-ratio', maybe(styleAspectRatio, source.naturalSize)],
                 ['background-image', maybe(styleUrl, source.placeholderSrc)],
               ]),
             ),

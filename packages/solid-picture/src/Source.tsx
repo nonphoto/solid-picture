@@ -4,14 +4,15 @@ import {
   isToken,
   TokenElement,
 } from '@solid-primitives/jsx-tokenizer'
-import { ComponentProps } from 'solid-js'
-import { NaturalSize } from './types'
+import { Size } from '@solid-primitives/utils'
 
-export type SourceProps = ComponentProps<'source'> &
-  Partial<NaturalSize> & {
-    placeholderSrc?: string
-    videoSrc?: string
-  }
+export type SourceProps = {
+  srcset?: string
+  media?: string
+  placeholderSrc?: string
+  videoSrc?: string
+  naturalSize?: Size
+}
 
 export interface SourceToken {
   props: SourceProps
