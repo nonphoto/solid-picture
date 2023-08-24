@@ -7,18 +7,19 @@ import { stylePx } from './css'
 import { PlaceholderImg } from './PlaceholderImg'
 import { Size } from '@solid-primitives/utils'
 import { SuspendedVideo } from './SuspendedVideo'
+import { VideoMode } from './types'
 
 export interface ImgProps {
   id?: string
   src?: string
   placeholderSrc?: string
   videoSrc?: string
+  videoMode?: VideoMode
   srcset?: string
   sizes?: string
   width?: string | number
   height?: string | number
   naturalSize?: Size
-  ref?: (element: HTMLImageElement) => void
 }
 
 export function Img(props: ImgProps) {
@@ -27,6 +28,7 @@ export function Img(props: ImgProps) {
   const defaultId = createUniqueId()
   const id = () => props.id ?? `img-${defaultId}`
   const sizes = () => maybe(width => stylePx(Math.round(width)), size.width) ?? props.sizes
+
   const placeholderImg = () => (
     <PlaceholderImg
       id={id()}
@@ -63,6 +65,7 @@ export function Img(props: ImgProps) {
         <SuspendedVideo
           id={id()}
           src={props.videoSrc}
+          mode={props.videoMode}
           ref={setElement}
           width={props.width}
           height={props.height}

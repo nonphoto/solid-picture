@@ -29,6 +29,8 @@ export function createImage(props: SuspendedImgProps): Resource<HTMLImageElement
   const [resource] = createResource(mounted, () => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
       const mounted = createMounted()
+      console.log(elementProps)
+
       const element = (
         <img
           {...elementProps}

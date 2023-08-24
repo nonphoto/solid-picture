@@ -5,12 +5,15 @@ import {
   TokenElement,
 } from '@solid-primitives/jsx-tokenizer'
 import { Size } from '@solid-primitives/utils'
+import { splitProps } from 'solid-js'
+import { VideoMode } from './types'
 
 export type SourceProps = {
   srcset?: string
   media?: string
   placeholderSrc?: string
   videoSrc?: string
+  videoMode?: VideoMode
   naturalSize?: Size
 }
 
@@ -27,7 +30,8 @@ export function isSourceToken(value: any): value is TokenElement<SourceToken> {
 }
 
 export function SourceElement(props: SourceProps) {
-  return <source {...props} />
+  const [, elementProps] = splitProps(props, ['videoSrc', 'placeholderSrc', 'naturalSize'])
+  return <source {...elementProps} />
 }
 
 export const Source = createToken(
