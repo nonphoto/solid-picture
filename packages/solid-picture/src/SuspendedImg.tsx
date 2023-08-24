@@ -29,7 +29,6 @@ export function createImage(props: SuspendedImgProps): Resource<HTMLImageElement
   const [resource] = createResource(mounted, () => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
       const mounted = createMounted()
-      console.log(elementProps)
 
       const element = (
         <img
@@ -44,6 +43,10 @@ export function createImage(props: SuspendedImgProps): Resource<HTMLImageElement
           }}
         />
       ) as HTMLImageElement
+
+      if (element.complete) {
+        resolve(element)
+      }
 
       createEffect(() => {
         props.ref?.(element)

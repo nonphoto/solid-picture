@@ -33,13 +33,18 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
   const [, elementProps] = splitProps(props, ['src', 'ref', 'mode'])
   const mounted = createMounted()
   const [hlsResource] = createResource(
-    () => props.mode === 'hls',
+    () => mounted() && props.mode === 'hls',
     () => import('hls.js'),
   )
+
+  createEffect(() => {
+    console.log(hlsResource())
+  })
   const [resource] = createResource(
     () => (props.mode === 'hls' ? mounted() && hlsResource() : mounted()),
     hlsResource => {
       return new Promise<HTMLVideoElement>((resolve, reject) => {
+        const mounted = createMounted()
         const element = (
           hlsResource === true ? (
             <video
@@ -59,7 +64,23 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
               autoplay
             />
           ) : (
-            <video {...elementProps} muted loop playsinline autoplay />
+            <video
+              {...elementProps}
+              width={400}
+              height={400}
+              onCanPlayThrough={() => {
+                resolve(element)
+              }}
+              muted
+              loop
+              playsinline
+              autoplay
+              style={
+                mounted()
+                  ? {}
+                  : { position: 'fixed', visibility: 'hidden', 'pointer-events': 'none' }
+              }
+            />
           )
         ) as HTMLVideoElement
 
@@ -69,10 +90,10 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
             const hls = new Hls()
             hls.loadSource(props.src)
             hls.attachMedia(element)
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-              resolve(element)
+            hls.once(Hls.Events.MANIFEST_PARSED, () => {
+              document.body.appendChild(element)
             })
-            hls.on(Hls.Events.ERROR, () => {
+            hls.once(Hls.Events.ERROR, () => {
               reject(
                 new VideoError(`Unable to load HLS video for src '${element.currentSrc}'`, element),
               )
