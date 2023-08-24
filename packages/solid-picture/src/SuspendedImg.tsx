@@ -1,4 +1,4 @@
-import { Accessor, createEffect, createResource, mergeProps, splitProps } from 'solid-js'
+import { Resource, createEffect, createResource, mergeProps, splitProps } from 'solid-js'
 import { usePicture } from './Picture'
 import { Size } from '@solid-primitives/utils'
 import { createMounted } from './utils'
@@ -23,7 +23,7 @@ export class ImageError extends Error {
   }
 }
 
-export function createImage(props: SuspendedImgProps): Accessor<HTMLImageElement | undefined> {
+export function createImage(props: SuspendedImgProps): Resource<HTMLImageElement> {
   const [, elementProps] = splitProps(props, ['ref', 'initialSize'])
   const mounted = createMounted()
   const [resource] = createResource(mounted, () => {

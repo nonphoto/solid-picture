@@ -6,11 +6,13 @@ import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
 import { PlaceholderImg } from './PlaceholderImg'
 import { Size } from '@solid-primitives/utils'
+import { SuspendedVideo } from './SuspendedVideo'
 
 export interface ImgProps {
   id?: string
   src?: string
   placeholderSrc?: string
+  videoSrc?: string
   srcset?: string
   sizes?: string
   width?: string | number
@@ -35,25 +37,37 @@ export function Img(props: ImgProps) {
     />
   )
 
+  const suspendedImg = () => (
+    <Show when={isSize(size) && size} fallback={placeholderImg()}>
+      {size => (
+        <Suspense fallback={placeholderImg()}>
+          <SuspendedImg
+            id={id()}
+            src={props.src}
+            srcset={props.srcset}
+            initialSize={size()}
+            sizes={sizes()}
+            ref={setElement}
+            width={props.width}
+            height={props.height}
+          />
+        </Suspense>
+      )}
+    </Show>
+  )
+
   return (
     <>
       <ImgStyle id={id()} naturalSize={props.naturalSize} />
-      <Show when={isSize(size) && size} fallback={placeholderImg()}>
-        {size => (
-          <Suspense fallback={placeholderImg()}>
-            <SuspendedImg
-              id={id()}
-              src={props.src}
-              srcset={props.srcset}
-              initialSize={size()}
-              sizes={sizes()}
-              ref={setElement}
-              width={props.width}
-              height={props.height}
-            />
-          </Suspense>
-        )}
-      </Show>
+      <Suspense fallback={suspendedImg()}>
+        <SuspendedVideo
+          id={id()}
+          src={props.videoSrc}
+          ref={setElement}
+          width={props.width}
+          height={props.height}
+        />
+      </Suspense>
     </>
   )
 }
