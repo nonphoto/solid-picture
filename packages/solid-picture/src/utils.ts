@@ -1,4 +1,4 @@
-import { access } from '@solid-primitives/utils'
+import { Size, access } from '@solid-primitives/utils'
 import { createSignal, onMount } from 'solid-js'
 import { MapMaybeAccessor } from './types'
 
@@ -12,10 +12,6 @@ export function maybe<F extends (...args: any[]) => any>(
   }
 }
 
-export function isVideoMediaType(type?: string) {
-  return type ? /^video\/\w+$/.test(type) : false
-}
-
 export function createMounted() {
   const [mounted, setMounted] = createSignal(false)
 
@@ -24,4 +20,13 @@ export function createMounted() {
   })
 
   return mounted
+}
+
+export function isSize(value: any): value is Size {
+  return (
+    value &&
+    typeof value === 'object' &&
+    typeof value.width === 'number' &&
+    typeof value.height === 'number'
+  )
 }

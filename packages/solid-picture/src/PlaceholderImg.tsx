@@ -1,9 +1,14 @@
-import { ComponentProps, splitProps } from 'solid-js'
 import { usePicture } from './Picture'
 
-export function PlaceholderImg(props: ComponentProps<'img'>) {
-  const [, otherProps] = splitProps(props, ['src', 'srcset', 'sizes'])
-  const { currentSource } = usePicture()
+export interface PlaceholderImgProps {
+  id?: string
+  src?: string
+  width?: string | number
+  height?: string | number
+  ref?: (element: HTMLImageElement) => void
+}
 
-  return <img {...otherProps} src={currentSource()?.placeholderSrc ?? props.src} />
+export function PlaceholderImg(props: PlaceholderImgProps) {
+  const { currentSource } = usePicture()
+  return <img {...props} src={currentSource()?.placeholderSrc ?? props.src} />
 }

@@ -1,17 +1,18 @@
-import { NullableSize } from '@solid-primitives/resize-observer'
-import {
-  ComponentProps,
-  Resource,
-  createEffect,
-  createResource,
-  createSignal,
-  mergeProps,
-  splitProps,
-} from 'solid-js'
+import { Resource, createEffect, createResource, mergeProps, splitProps } from 'solid-js'
 import { usePicture } from './Picture'
-import { SourceProps } from './Source'
-import { MaybeAccessor, access } from '@solid-primitives/utils'
+import { Size } from '@solid-primitives/utils'
 import { createMounted } from './utils'
+
+export interface SuspendedImgProps {
+  id?: string
+  src?: string
+  srcset?: string
+  sizes?: string
+  width?: string | number
+  height?: string | number
+  initialSize: Size
+  ref?: (element: HTMLImageElement) => void
+}
 
 export class ImageError extends Error {
   target: HTMLImageElement
@@ -22,57 +23,44 @@ export class ImageError extends Error {
   }
 }
 
-export function loadImage(props: ComponentProps<'img'> & { size: NullableSize }) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const [, imgProps] = splitProps(props, ['ref', 'size'])
-    const [resolved, setResolved] = createSignal<HTMLImageElement>()
-
-    createEffect(() => {
-      if (resolved() && typeof props.ref === 'function') {
-        props.ref(resolved()!)
-      }
-    })
-
-    return (
-      <img
-        {...imgProps}
-        width={resolved() ? undefined : props.size.width ?? undefined}
-        height={resolved() ? undefined : props.size.height ?? undefined}
-        onLoad={event => {
-          setResolved(event.currentTarget)
-          resolve(event.currentTarget)
-        }}
-        onError={event => {
-          reject(
-            new ImageError(
-              `Unable to load image for src ${event.currentTarget.currentSrc}`,
-              event.currentTarget,
-            ),
-          )
-        }}
-      />
-    ) as HTMLImageElement
-  })
-}
-
-export function createImage(
-  props: MaybeAccessor<(ComponentProps<'img'> & { size: NullableSize }) | undefined>,
-): Resource<HTMLImageElement> {
+export function createImage(props: SuspendedImgProps): Resource<HTMLImageElement> {
+  const [, elementProps] = splitProps(props, ['ref', 'initialSize'])
   const mounted = createMounted()
-  const [resource] = createResource(
-    () => mounted() && access(props),
-    props => loadImage(props),
-  )
+  const [resource] = createResource(mounted, () => {
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const mounted = createMounted()
+      console.log(elementProps)
+
+      const element = (
+        <img
+          {...elementProps}
+          width={mounted() ? undefined : props.initialSize.width}
+          height={mounted() ? undefined : props.initialSize.height}
+          onLoad={() => {
+            resolve(element)
+          }}
+          onError={() => {
+            reject(new ImageError(`Unable to load image for src '${element.currentSrc}'`, element))
+          }}
+        />
+      ) as HTMLImageElement
+
+      createEffect(() => {
+        props.ref?.(element)
+      })
+    })
+  })
+
   return resource
 }
 
-function withSource<T extends ComponentProps<'img'>>(props: T, source: SourceProps = {}) {
-  const [imgProps] = splitProps(source, ['srcset'])
-  return mergeProps(props, imgProps)
-}
-
-export function SuspendedImg(props: ComponentProps<'img'> & { size: NullableSize }) {
+export function SuspendedImg(props: SuspendedImgProps) {
   const { currentSource } = usePicture()
-  const image = createImage(() => withSource(props, currentSource()))
+  const mergedProps = mergeProps(props, {
+    get srcset() {
+      return currentSource()?.srcset ?? props.srcset
+    },
+  })
+  const image = createImage(mergedProps)
   return <>{image()}</>
 }

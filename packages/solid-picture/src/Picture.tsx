@@ -10,7 +10,7 @@ import {
   createSignal,
   For,
 } from 'solid-js'
-import { SourceProps, isSourceToken, sourceTokenizer } from './Source'
+import { isSourceToken, sourceTokenizer, SourceProps } from './Source'
 import { createMediaQuery } from '@solid-primitives/media'
 
 const PictureContext = createContext<{
