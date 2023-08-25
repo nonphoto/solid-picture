@@ -1,4 +1,5 @@
-import { MaybeAccessor } from '@solid-primitives/utils'
+import type { JSX } from 'solid-js'
+import type { MaybeAccessor } from '@solid-primitives/utils'
 
 export type MapMaybeAccessor<T> = T extends any[]
   ? {
@@ -7,3 +8,15 @@ export type MapMaybeAccessor<T> = T extends any[]
   : never
 
 export type VideoMode = 'default' | 'hls'
+
+export interface MediaElementProps {
+  src?: string
+  id?: string
+  width?: string | number
+  height?: string | number
+  class?: string
+  classList?: {
+    [key: string]: boolean | undefined
+  }
+  style?: string | JSX.CSSProperties
+}

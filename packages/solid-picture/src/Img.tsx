@@ -1,4 +1,4 @@
-import { Show, Suspense, createSignal, createUniqueId } from 'solid-js'
+import { Show, Suspense, createSignal, createUniqueId, splitProps } from 'solid-js'
 import { isSize, maybe } from './utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { ImgStyle } from './ImgStyle'
@@ -7,36 +7,42 @@ import { stylePx } from './css'
 import { PlaceholderImg } from './PlaceholderImg'
 import { Size } from '@solid-primitives/utils'
 import { SuspendedVideo } from './SuspendedVideo'
-import { VideoMode } from './types'
+import { MediaElementProps, VideoMode } from './types'
 
-export interface ImgProps {
-  id?: string
-  src?: string
+export type ImgProps = MediaElementProps & {
   placeholderSrc?: string
   videoSrc?: string
   videoMode?: VideoMode
   srcset?: string
   sizes?: string
-  width?: string | number
-  height?: string | number
   naturalSize?: Size
+  ref?: (element: HTMLImageElement | HTMLVideoElement) => void
 }
 
 export function Img(props: ImgProps) {
+  const [, elementProps] = splitProps(props, [
+    'id',
+    'src',
+    'placeholderSrc',
+    'videoSrc',
+    'videoMode',
+    'srcset',
+    'sizes',
+    'naturalSize',
+    'ref',
+  ])
   const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
   const size = createElementSize(element)
   const defaultId = createUniqueId()
   const id = () => props.id ?? `img-${defaultId}`
   const sizes = () => maybe(width => stylePx(Math.round(width)), size.width) ?? props.sizes
+  const ref = (element: HTMLImageElement | HTMLVideoElement) => {
+    setElement(element)
+    props.ref?.(element)
+  }
 
   const placeholderImg = () => (
-    <PlaceholderImg
-      id={id()}
-      src={props.placeholderSrc}
-      ref={setElement}
-      width={props.width}
-      height={props.height}
-    />
+    <PlaceholderImg {...elementProps} id={id()} src={props.placeholderSrc} ref={ref} />
   )
 
   const suspendedImg = () => (
@@ -44,14 +50,13 @@ export function Img(props: ImgProps) {
       {size => (
         <Suspense fallback={placeholderImg()}>
           <SuspendedImg
+            {...elementProps}
             id={id()}
             src={props.src}
             srcset={props.srcset}
             initialSize={size()}
             sizes={sizes()}
-            ref={setElement}
-            width={props.width}
-            height={props.height}
+            ref={ref}
           />
         </Suspense>
       )}
@@ -63,12 +68,11 @@ export function Img(props: ImgProps) {
       <ImgStyle id={id()} naturalSize={props.naturalSize} />
       <Suspense fallback={suspendedImg()}>
         <SuspendedVideo
+          {...elementProps}
           id={id()}
           src={props.videoSrc}
           mode={props.videoMode}
-          ref={setElement}
-          width={props.width}
-          height={props.height}
+          ref={ref}
         />
       </Suspense>
     </>

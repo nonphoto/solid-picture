@@ -1,5 +1,11 @@
 # solid-picture
 
+## 0.0.6
+
+### Patch Changes
+
+- Add class, classList, style, and ref props
+
 ## 0.0.5
 
 ### Patch Changes

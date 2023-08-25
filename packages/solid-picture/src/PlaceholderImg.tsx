@@ -1,10 +1,7 @@
 import { usePicture } from './Picture'
+import { MediaElementProps } from './types'
 
-export interface PlaceholderImgProps {
-  id?: string
-  src?: string
-  width?: string | number
-  height?: string | number
+export type PlaceholderImgProps = MediaElementProps & {
   ref?: (element: HTMLImageElement) => void
 }
 

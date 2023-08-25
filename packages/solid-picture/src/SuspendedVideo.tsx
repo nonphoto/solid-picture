@@ -9,14 +9,10 @@ import {
 } from 'solid-js'
 import { usePicture } from './Picture'
 import { createMounted } from './utils'
-import { VideoMode } from './types'
+import { MediaElementProps, VideoMode } from './types'
 
-export interface SuspendedVideoProps {
-  id?: string
-  src?: string
+export type SuspendedVideoProps = MediaElementProps & {
   mode?: VideoMode
-  width?: string | number
-  height?: string | number
   ref?: (element: HTMLVideoElement) => void
 }
 
@@ -36,10 +32,6 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
     () => mounted() && props.mode === 'hls',
     () => import('hls.js'),
   )
-
-  createEffect(() => {
-    console.log(hlsResource())
-  })
   const [resource] = createResource(
     () => (props.mode === 'hls' ? mounted() && hlsResource() : mounted()),
     hlsResource => {
@@ -77,8 +69,12 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
               autoplay
               style={
                 mounted()
-                  ? {}
-                  : { position: 'fixed', visibility: 'hidden', 'pointer-events': 'none' }
+                  ? props.style
+                  : {
+                      position: 'fixed',
+                      visibility: 'hidden',
+                      'pointer-events': 'none',
+                    }
               }
             />
           )
