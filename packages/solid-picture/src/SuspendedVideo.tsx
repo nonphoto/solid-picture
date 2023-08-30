@@ -58,8 +58,6 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
           ) : (
             <video
               {...elementProps}
-              width={400}
-              height={400}
               onCanPlayThrough={() => {
                 resolve(element)
               }}

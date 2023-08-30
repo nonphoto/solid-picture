@@ -9,20 +9,20 @@
   },
   "type": "module",
   "devDependencies": {
-    "@types/node": "^18.11.18",
-    "esbuild": "^0.14.54",
-    "postcss": "^8.4.21",
-    "solid-start-node": "^0.2.19",
-    "typescript": "^4.9.4",
-    "vite": "^4.1.4"
+    "@types/node": "^20.5.7",
+    "esbuild": "^0.19.2",
+    "postcss": "^8.4.29",
+    "solid-start-node": "^0.3.4",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9"
   },
   "dependencies": {
-    "@solidjs/meta": "^0.28.2",
-    "@solidjs/router": "^0.8.2",
-    "solid-js": "^1.7.2",
+    "@solidjs/meta": "^0.28.6",
+    "@solidjs/router": "^0.8.3",
+    "solid-js": "^1.7.11",
     "solid-picture": "workspace:*",
-    "solid-start": "^0.2.26",
-    "undici": "^5.15.1"
+    "solid-start": "^0.3.4",
+    "undici": "^5.23.0"
   },
   "engines": {
     "node": ">=16.8"
