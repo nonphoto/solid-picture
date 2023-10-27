@@ -66,15 +66,19 @@ export function Img(props: ImgProps) {
   return (
     <>
       <ImgStyle id={id()} naturalSize={props.naturalSize} />
-      <Suspense fallback={suspendedImg()}>
-        <SuspendedVideo
-          {...elementProps}
-          id={id()}
-          src={props.videoSrc}
-          mode={props.videoMode}
-          ref={ref}
-        />
-      </Suspense>
+      <Show when={props.videoSrc} fallback={suspendedImg()}>
+        {videoSrc => (
+          <Suspense fallback={suspendedImg()}>
+            <SuspendedVideo
+              {...elementProps}
+              id={id()}
+              src={videoSrc()}
+              mode={props.videoMode}
+              ref={ref}
+            />
+          </Suspense>
+        )}
+      </Show>
     </>
   )
 }
