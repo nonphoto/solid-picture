@@ -48,7 +48,7 @@ importers:
         specifier: ^0.34.3
         version: 0.34.3(jsdom@22.1.0)
 
-  packages/sanity-image:
+  packages/sanity-image-props:
     dependencies:
       '@sanity/image-url':
         specifier: 1.0.2
