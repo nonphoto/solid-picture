@@ -1,6 +1,6 @@
 {
-  "name": "@nonphoto/sanity-image",
-  "version": "0.1.2",
+  "name": "@nonphoto/sanity-image-props",
+  "version": "0.0.1",
   "type": "module",
   "files": [
     "dist"
@@ -8,28 +8,18 @@
   "private": false,
   "sideEffects": false,
   "scripts": {
-    "dev": "vite serve dev",
-    "build": "tsup",
-    "test": "vitest",
-    "prepublishOnly": "pnpm build",
-    "format": "prettier --ignore-path .gitignore -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
-    "update-deps": "pnpm up -Li",
-    "typecheck": "tsc --noEmit"
+    "dev": "tsup --watch",
+    "build": "tsup"
   },
   "devDependencies": {
-    "@changesets/cli": "2.26.1",
     "@types/node": "18.14.6",
     "prettier": "2.8.7",
     "tsup": "6.7.0",
-    "tsup-preset-solid": "0.1.8",
-    "typescript": "^4.9.4",
-    "vite": "^4.0.4",
-    "vitest": "0.29.8"
+    "typescript": "^4.9.4"
   },
   "dependencies": {
     "@sanity/image-url": "1.0.2"
   },
-  "packageManager": "pnpm@7.29.1",
   "publishConfig": {
     "access": "public"
   },
