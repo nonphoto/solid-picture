@@ -25,18 +25,8 @@
   },
   "browser": {},
   "exports": {
-    "development": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/dev.js"
-      },
-      "require": "./dist/dev.cjs"
-    },
-    "import": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "require": "./dist/index.cjs"
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
   },
   "typesVersions": {},
   "main": "./dist/index.cjs",
