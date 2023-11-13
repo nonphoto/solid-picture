@@ -12,20 +12,27 @@ import type {
 
 export type SanityAssetWithMetadata = SanityAsset & {
   metadata?: {
-    lqip?: string
-    dimensions?: SanityImageDimensions
+    lqip?: string | null
+    dimensions?: SanityImageDimensions | null
   }
 }
 
 export interface SanityImageObjectWithMetadata {
   asset: SanityAssetWithMetadata
-  crop?: SanityImageCrop
-  hotspot?: SanityImageHotspot
+  crop?: SanityImageCrop | null
+  hotspot?: SanityImageHotspot | null
 }
 
 export interface Size {
   width: number
   height: number
+}
+
+export interface ImagePropsReturn {
+  src: string
+  srcset: string
+  placeholderSrc?: string
+  naturalSize?: Size
 }
 
 export const defaultWidths = [
@@ -81,14 +88,10 @@ export function imageProps({
 }: {
   image: SanityImageObjectWithMetadata
   client: SanityClientLike | SanityProjectDetails | SanityModernClientLike
-  widths: number[]
-  quality: number
+  widths?: number[]
+  quality?: number
   aspectRatio?: number
-}): {
-  src: string
-  srcset: string
-  naturalSize?: Size
-} {
+}): ImagePropsReturn {
   const sortedWidths = Array.from(widths).sort((a, b) => a - b)
 
   const builder = imageUrlBuilder(client).image(image).quality(quality).auto('format')
@@ -115,6 +118,7 @@ export function imageProps({
     srcset: sortedWidths
       .map(width => `${buildAspectRatio(builder, width, aspectRatio).url()} ${width}w`)
       .join(','),
+    placeholderSrc: metadata?.lqip ?? undefined,
     naturalSize,
   }
 }
