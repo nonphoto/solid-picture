@@ -28,11 +28,17 @@ export interface Size {
   height: number
 }
 
+export interface Position {
+  x: number
+  y: number
+}
+
 export interface ImagePropsReturn {
   src: string
   srcset: string
   placeholderSrc?: string
   naturalSize?: Size
+  objectPosition?: Position
 }
 
 export const defaultWidths = [
@@ -120,6 +126,7 @@ export function imageProps({
       .join(','),
     placeholderSrc: metadata?.lqip ?? undefined,
     naturalSize,
+    objectPosition: image.hotspot ?? undefined,
   }
 }
 

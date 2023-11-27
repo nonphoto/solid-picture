@@ -1,6 +1,16 @@
 import type { JSX } from 'solid-js'
 import type { MaybeAccessor } from '@solid-primitives/utils'
 
+export interface Size {
+  width: number
+  height: number
+}
+
+export interface Position {
+  x: number
+  y: number
+}
+
 export type MapMaybeAccessor<T> = T extends any[]
   ? {
       [K in keyof T]: MaybeAccessor<T[K] | undefined>

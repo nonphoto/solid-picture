@@ -4,9 +4,8 @@ import {
   isToken,
   TokenElement,
 } from '@solid-primitives/jsx-tokenizer'
-import { Size } from '@solid-primitives/utils'
 import { splitProps } from 'solid-js'
-import { VideoMode } from './types'
+import { Position, Size, VideoMode } from './types'
 
 export type SourceProps = {
   srcset?: string
@@ -15,6 +14,7 @@ export type SourceProps = {
   videoSrc?: string
   videoMode?: VideoMode
   naturalSize?: Size
+  objectPosition?: Position
 }
 
 export interface SourceToken {

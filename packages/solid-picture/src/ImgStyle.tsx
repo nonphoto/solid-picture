@@ -1,9 +1,14 @@
 import { usePicture } from './Picture'
-import { cssMediaRule, cssRule, styleAspectRatio, styleUrl } from './css'
+import { cssMediaRule, cssRule, styleAspectRatio, stylePosition, styleUrl } from './css'
+import { Position, Size } from './types'
 import { maybe } from './utils'
-import { Size } from '@solid-primitives/utils'
 
-export function ImgStyle(props: { id: string; naturalSize?: Size; placeholderSrc?: string }) {
+export function ImgStyle(props: {
+  id: string
+  naturalSize?: Size
+  objectPosition?: Position
+  placeholderSrc?: string
+}) {
   const { sources } = usePicture()
   const selector = () => `:where(#${props.id})`
 
@@ -13,6 +18,8 @@ export function ImgStyle(props: { id: string; naturalSize?: Size; placeholderSrc
         cssRule(selector(), [
           ['aspect-ratio', maybe(styleAspectRatio, props.naturalSize)],
           ['background-image', maybe(styleUrl, props.placeholderSrc)],
+          ['background-position', maybe(stylePosition, props.objectPosition)],
+          ['object-position', maybe(stylePosition, props.objectPosition)],
         ]),
         ...sources()
           .filter(source => source.media != null)
@@ -22,6 +29,8 @@ export function ImgStyle(props: { id: string; naturalSize?: Size; placeholderSrc
               cssRule(selector(), [
                 ['aspect-ratio', maybe(styleAspectRatio, source.naturalSize)],
                 ['background-image', maybe(styleUrl, source.placeholderSrc)],
+                ['background-position', maybe(stylePosition, source.objectPosition)],
+                ['object-position', maybe(stylePosition, source.objectPosition)],
               ]),
             ),
           ),

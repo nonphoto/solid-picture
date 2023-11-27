@@ -5,9 +5,8 @@ import { ImgStyle } from './ImgStyle'
 import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
 import { PlaceholderImg } from './PlaceholderImg'
-import { Size } from '@solid-primitives/utils'
 import { SuspendedVideo } from './SuspendedVideo'
-import { MediaElementProps, VideoMode } from './types'
+import { MediaElementProps, Position, Size, VideoMode } from './types'
 
 export type ImgProps = MediaElementProps & {
   placeholderSrc?: string
@@ -16,6 +15,7 @@ export type ImgProps = MediaElementProps & {
   srcset?: string
   sizes?: string
   naturalSize?: Size
+  objectPosition?: Position
   ref?: (element: HTMLImageElement | HTMLVideoElement) => void
 }
 
@@ -29,6 +29,7 @@ export function Img(props: ImgProps) {
     'srcset',
     'sizes',
     'naturalSize',
+    'objectPosition',
     'ref',
   ])
   const [element, setElement] = createSignal<HTMLImageElement | HTMLVideoElement>()
@@ -41,14 +42,14 @@ export function Img(props: ImgProps) {
     props.ref?.(element)
   }
 
-  const placeholderImg = () => (
+  const placeholderImg = (
     <PlaceholderImg {...elementProps} id={id()} src={props.placeholderSrc} ref={ref} />
   )
 
   const suspendedImg = () => (
-    <Show when={isSize(size) && size} fallback={placeholderImg()}>
+    <Show when={isSize(size) && size} fallback={placeholderImg}>
       {size => (
-        <Suspense fallback={placeholderImg()}>
+        <Suspense fallback={placeholderImg}>
           <SuspendedImg
             {...elementProps}
             id={id()}
@@ -65,7 +66,7 @@ export function Img(props: ImgProps) {
 
   return (
     <>
-      <ImgStyle id={id()} naturalSize={props.naturalSize} />
+      <ImgStyle id={id()} naturalSize={props.naturalSize} objectPosition={props.objectPosition} />
       <Show when={props.videoSrc} fallback={suspendedImg()}>
         {videoSrc => (
           <Suspense fallback={suspendedImg()}>
