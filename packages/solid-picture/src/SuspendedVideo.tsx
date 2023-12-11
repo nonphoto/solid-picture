@@ -30,7 +30,10 @@ export function createVideo(props: SuspendedVideoProps): Resource<HTMLVideoEleme
   const mounted = createMounted()
   const [hlsResource] = createResource(
     () => mounted() && props.mode === 'hls',
-    () => import('hls.js'),
+    () => {
+      console.log('import hls')
+      return import('hls.js')
+    },
   )
   const [resource] = createResource(
     () => (props.mode === 'hls' ? mounted() && hlsResource() : mounted()),

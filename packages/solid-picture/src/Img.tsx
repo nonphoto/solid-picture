@@ -10,6 +10,7 @@ import { MediaElementProps, Position, Size, VideoMode } from './types'
 import { Portal } from 'solid-js/web'
 
 export type ImgProps = MediaElementProps & {
+  alt?: string
   placeholderSrc?: string
   videoSrc?: string
   videoMode?: VideoMode
