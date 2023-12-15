@@ -2,11 +2,12 @@ import { Resource, createEffect, createResource, mergeProps, splitProps } from '
 import { usePicture } from './Picture'
 import { Size } from '@solid-primitives/utils'
 import { createMounted } from './utils'
-import { MediaElementProps } from './types'
+import { ImageLoading, MediaElementProps } from './types'
 
 export type SuspendedImgProps = MediaElementProps & {
   srcset?: string
   sizes?: string
+  loading?: ImageLoading
   initialSize: Size
   ref?: (element: HTMLImageElement) => void
 }

@@ -1,8 +1,9 @@
 import { usePicture } from './Picture'
-import { MediaElementProps } from './types'
+import { ImageLoading, MediaElementProps } from './types'
 
 export type PlaceholderImgProps = MediaElementProps & {
   ref?: (element: HTMLImageElement) => void
+  loading?: ImageLoading
 }
 
 export function PlaceholderImg(props: PlaceholderImgProps) {

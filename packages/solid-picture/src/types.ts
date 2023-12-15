@@ -19,6 +19,8 @@ export type MapMaybeAccessor<T> = T extends any[]
 
 export type VideoMode = 'default' | 'hls'
 
+export type ImageLoading = 'eager' | 'lazy'
+
 export interface MediaElementProps {
   src?: string
   id?: string

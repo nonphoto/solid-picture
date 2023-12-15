@@ -6,7 +6,7 @@ import { SuspendedImg } from './SuspendedImg'
 import { stylePx } from './css'
 import { PlaceholderImg } from './PlaceholderImg'
 import { SuspendedVideo } from './SuspendedVideo'
-import { MediaElementProps, Position, Size, VideoMode } from './types'
+import { ImageLoading, MediaElementProps, Position, Size, VideoMode } from './types'
 import { Portal } from 'solid-js/web'
 
 export type ImgProps = MediaElementProps & {
@@ -16,6 +16,7 @@ export type ImgProps = MediaElementProps & {
   videoMode?: VideoMode
   srcset?: string
   sizes?: string
+  loading?: ImageLoading
   naturalSize?: Size
   objectPosition?: Position
   ref?: (element: HTMLImageElement | HTMLVideoElement) => void
@@ -30,6 +31,7 @@ export function Img(props: ImgProps) {
     'videoMode',
     'srcset',
     'sizes',
+    'loading',
     'naturalSize',
     'objectPosition',
     'ref',
@@ -45,7 +47,13 @@ export function Img(props: ImgProps) {
   }
 
   const placeholderImg = (
-    <PlaceholderImg {...elementProps} id={id()} src={props.placeholderSrc} ref={ref} />
+    <PlaceholderImg
+      {...elementProps}
+      id={id()}
+      src={props.placeholderSrc}
+      ref={ref}
+      loading={props.loading}
+    />
   )
 
   const suspendedImg = (
@@ -59,6 +67,7 @@ export function Img(props: ImgProps) {
             srcset={props.srcset}
             initialSize={size()}
             sizes={sizes()}
+            loading={props.loading}
             ref={ref}
           />
         </Suspense>
