@@ -38,7 +38,7 @@ export function Img(props: ImgProps) {
   const size = createElementSize(element)
   const defaultId = createUniqueId()
   const id = () => props.id ?? `img-${defaultId}`
-  const sizes = () => maybe(width => stylePx(Math.round(width)), size.width) ?? props.sizes
+  const sizes = () => props.sizes ?? maybe(width => stylePx(Math.round(width)), size.width)
   const ref = (element: HTMLImageElement | HTMLVideoElement) => {
     setElement(element)
     props.ref?.(element)
