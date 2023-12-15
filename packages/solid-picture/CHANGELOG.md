@@ -1,5 +1,11 @@
 # solid-picture
 
+## 0.0.9
+
+### Patch Changes
+
+- f254df2: Fix overriding size prop not working
+
 ## 0.0.8
 
 ### Patch Changes

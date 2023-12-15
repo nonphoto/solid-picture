@@ -1,5 +1,12 @@
 # dev
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [f254df2]
+  - solid-picture@0.0.9
+
 ## 0.0.4
 
 ### Patch Changes
