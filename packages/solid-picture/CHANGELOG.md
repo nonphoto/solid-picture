@@ -1,5 +1,11 @@
 # solid-picture
 
+## 0.0.11
+
+### Patch Changes
+
+- d60e409: Add loading prop
+
 ## 0.0.9
 
 ### Patch Changes
