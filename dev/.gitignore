@@ -1,16 +1,17 @@
 dist
-.solid
+.wrangler
 .output
 .vercel
 .netlify
 .vinxi
+app.config.timestamp_*.js
 
 # Environment
 .env
 .env*.local
 
 # dependencies
-node_modules
+/node_modules
 
 # IDEs and editors
 /.idea

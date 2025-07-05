@@ -1,42 +1,52 @@
 {
   "name": "solid-picture-monorepo",
   "description": "SolidJS component for responsive images, art direction, and inline video",
-  "version": "0.0.1",
+  "version": "0.0.0",
+  "type": "module",
   "license": "MIT",
-  "author": "Jonas Luebbers",
-  "contributors": [],
-  "private": true,
+  "author": "Jonas Luebbers <jonas@jonasluebbers.com> (https://www.jonasluebbers.com)",
+  "sideEffects": false,
   "scripts": {
-    "postinstall": "pnpm build",
-    "dev": "pnpm run --parallel --filter ./packages/* dev",
-    "build": "turbo run build --filter=./packages/*",
-    "test": "turbo run test --filter=./packages/*",
-    "typecheck": "turbo run typecheck --filter=./packages/*",
-    "build-test": "turbo run build test typecheck --filter=./packages/*",
-    "format": "prettier --ignore-path .gitignore -w \"packages/**/*.{js,ts,json,css,tsx,jsx,md}\" \"playgrounds/**/*.{js,ts,json,css,tsx,jsx,md}\"",
-    "changeset": "changeset",
-    "version-packages": "changeset version && pnpm i",
-    "ci:version": "changeset version && pnpm i --no-frozen-lockfile && git add .",
-    "release": "pnpm build && changeset publish",
-    "update-deps": "pnpm up -Lri"
+    "prepare": "pnpm build",
+    "build": "tsup ./src/index.ts --dts --format esm --clean",
+    "release": "semantic-release"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.26.2",
-    "@types/node": "^20.5.7",
-    "concurrently": "^8.2.1",
-    "jsdom": "^22.1.0",
-    "prettier": "3.0.3",
-    "solid-js": "^1.7.11",
-    "tsup": "^7.2.0",
-    "tsup-preset-solid": "^2.0.2",
-    "turbo": "^1.10.16",
-    "typescript": "^5.2.2",
-    "vite": "^4.4.9",
-    "vite-plugin-solid": "^2.7.0",
-    "vitest": "^0.34.3"
+    "prettier": "3.6.0",
+    "semantic-release": "24.2.5",
+    "tsup": "8.5.0",
+    "tsup-preset-solid": "^2.2.0",
+    "typescript": "5.8.3"
   },
-  "packageManager": "pnpm@7.22.0",
+  "packageManager": "pnpm@10.12.3",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./src/*": "./src/*"
+  },
+  "files": [
+    "./dist/*",
+    "./src/*"
+  ],
+  "dependencies": {
+    "@solid-primitives/jsx-tokenizer": "1.1.1",
+    "@solid-primitives/media": "2.3.1",
+    "@solid-primitives/resize-observer": "2.1.1",
+    "@solid-primitives/utils": "6.3.1",
+    "hls.js": "1.6.5",
+    "solid-js": "1.9.7"
   }
 }
